@@ -172,7 +172,7 @@ time:
                 return std::string(b);
           - lvgl.label.update:
               id: lbl_ampm
-              text: !lambda 'return id(ha_time).now().hour >= 12 ? "PM" : "AM";'
+              text: !lambda 'return std::string(id(ha_time).now().hour >= 12 ? "PM" : "AM");'
 
 # -------------------------------------------------------------------
 #  DISPLAY + TOUCH   >>> TODO: replace with YOUR board's known-good config

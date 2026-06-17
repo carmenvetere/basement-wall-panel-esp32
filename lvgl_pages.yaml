@@ -1306,7 +1306,7 @@ pages:
                       knob: { bg_color: $color_white, bg_opa: COVER }
                       on_value:
                         - homeassistant.action:
-                            action: !lambda 'return x ? "switch.turn_on" : "switch.turn_off";'
+                            action: !lambda 'return std::string(x ? "switch.turn_on" : "switch.turn_off");'
                             data: { entity_id: "${switch_pool_heater}" }
             # setpoint stepper
             - obj:
