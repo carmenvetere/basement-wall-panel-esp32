@@ -1,0 +1,1697 @@
+# ===================================================================
+#  lvgl_pages.yaml  —  the LVGL block (included by nspanel-dashboard.yaml)
+#  Substitutions ($color_*, $i_*, entity_*) resolve from the parent file.
+# ===================================================================
+displays: [main_display]
+touchscreens: [main_touch]
+color_depth: 16
+bg_color: $color_bg
+default_font: manrope_16
+disp_bg_color: $color_bg
+
+# ---- Reusable styles ------------------------------------------------
+style_definitions:
+  - id: card
+    bg_color: $color_surface
+    bg_opa: COVER
+    radius: 18
+    border_width: 1
+    border_color: $color_border
+    border_opa: 8%
+    pad_all: 16
+  - id: plain                       # transparent container, no chrome
+    bg_opa: TRANSP
+    border_width: 0
+    pad_all: 0
+    radius: 0
+  - id: tile
+    bg_color: $color_surface
+    bg_opa: COVER
+    radius: 18
+    border_width: 1
+    border_color: $color_border
+    border_opa: 8%
+    pad_left: 17
+    pad_right: 17
+    pad_top: 13
+    pad_bottom: 13
+  - id: back_btn
+    bg_color: $color_surface
+    bg_opa: COVER
+    radius: 12
+    border_width: 1
+    border_color: $color_border
+    border_opa: 8%
+    width: 42
+    height: 42
+  - id: title                       # screen title label
+    text_font: manrope_24
+    text_color: $color_text
+  - id: section                     # uppercase section label
+    text_font: manrope_13
+    text_color: $color_dim
+    text_letter_space: 1
+  - id: tile_title
+    text_font: manrope_20
+    text_color: $color_text
+  - id: tile_sub
+    text_font: manrope_14
+    text_color: $color_text2
+  - id: icon_neutral
+    text_font: icons_30
+    text_color: $color_icon
+
+# Top layer: nothing global
+top_layer:
+  widgets: []
+
+# ===================================================================
+pages:
+
+  # ---------------------------------------------------------------
+  #  1. HOME   (must never scroll — grid flexes to fit)
+  # ---------------------------------------------------------------
+  - id: page_home
+    bg_color: $color_bg
+    bg_opa: COVER
+    scrollbar_mode: "OFF"
+    pad_all: 0
+    layout:
+      type: flex
+      flex_flow: COLUMN
+      flex_align_cross: STRETCH
+    widgets:
+      # Header row: clock left, weather + bell right
+      - obj:
+          styles: plain
+          width: 100%
+          height: 78
+          pad_left: 20
+          pad_right: 20
+          pad_top: 18
+          layout:
+            type: flex
+            flex_flow: ROW
+            flex_align_main: SPACE_BETWEEN
+            flex_align_cross: CENTER
+          widgets:
+            - obj:
+                styles: plain
+                width: SIZE_CONTENT
+                height: SIZE_CONTENT
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: END, pad_column: 6 }
+                widgets:
+                  - label: { id: lbl_clock, text: "9:41", text_font: manrope_56, text_color: $color_text }
+                  - label: { id: lbl_ampm, text: "AM", text_font: manrope_20, text_color: $color_dim, pad_bottom: 8 }
+            - obj:
+                styles: plain
+                width: SIZE_CONTENT
+                height: SIZE_CONTENT
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 14 }
+                widgets:
+                  - label: { text: "${i_weather}", text_font: icons_28, text_color: $color_icon }
+                  - label: { id: lbl_temp, text: "72°", text_font: manrope_26, text_color: $color_text }
+                  - button:
+                      id: btn_bell
+                      width: 42
+                      height: 42
+                      styles: back_btn
+                      on_click: { lvgl.page.show: page_alerts }
+                      widgets:
+                        - label: { align: CENTER, text: "${i_bell}", text_font: icons_24, text_color: $color_icon }
+                        - obj:
+                            id: badge_bell
+                            align: TOP_RIGHT
+                            x: 6
+                            y: -6
+                            width: 20
+                            height: 20
+                            radius: 10
+                            bg_color: $color_alert
+                            bg_opa: COVER
+                            border_width: 0
+                            pad_all: 0
+                            widgets:
+                              - label: { id: lbl_badge, align: CENTER, text: "3", text_font: manrope_13, text_color: $color_bg }
+
+      # Contextual banner: power outage (hidden until binary_sensor true)
+      - obj:
+          id: banner_power
+          hidden: true
+          width: 100%
+          height: 58
+          margin_left: 16
+          margin_right: 16
+          margin_bottom: 8
+          bg_color: $color_alert
+          bg_opa: 12%
+          radius: 15
+          border_width: 1
+          border_color: $color_alert
+          border_opa: 30%
+          pad_left: 14
+          pad_right: 14
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 11 }
+          on_click: { lvgl.page.show: page_alerts }
+          widgets:
+            - label: { text: "${i_flash}", text_font: icons_22, text_color: $color_alert }
+            - obj:
+                styles: plain
+                flex_grow: 1
+                height: SIZE_CONTENT
+                layout: { type: flex, flex_flow: COLUMN, pad_row: 1 }
+                widgets:
+                  - label: { text: "Power outage detected", text_font: manrope_15, text_color: 0xD49476 }
+                  - label: { text: "Running on battery backup", text_font: manrope_13, text_color: $color_text2 }
+            - label: { text: "${i_chevron_r}", text_font: icons_22, text_color: $color_alert }
+
+      # Contextual banner: sprinklers running (hidden until true)
+      - obj:
+          id: banner_sprinkler
+          hidden: true
+          width: 100%
+          height: 58
+          margin_left: 16
+          margin_right: 16
+          margin_bottom: 8
+          bg_color: $color_accent
+          bg_opa: 12%
+          radius: 15
+          border_width: 1
+          border_color: $color_accent
+          border_opa: 30%
+          pad_left: 14
+          pad_right: 12
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 11 }
+          on_click: { lvgl.page.show: page_sprinklers }
+          widgets:
+            - label: { text: "${i_water}", text_font: icons_22, text_color: $color_accent }
+            - obj:
+                styles: plain
+                flex_grow: 1
+                height: SIZE_CONTENT
+                layout: { type: flex, flex_flow: COLUMN, pad_row: 1 }
+                widgets:
+                  - label: { text: "Sprinklers running", text_font: manrope_15, text_color: $color_accent_light }
+                  - label: { text: "Front Lawn · 12:40 left", text_font: manrope_13, text_color: $color_text2 }
+            - button:
+                width: SIZE_CONTENT
+                height: 38
+                bg_color: $color_accent
+                bg_opa: COVER
+                radius: 11
+                pad_left: 14
+                pad_right: 14
+                on_click:
+                  - homeassistant.action: { action: switch.turn_off, data: { entity_id: "${switch_sprinkler}" } }
+                widgets:
+                  - label: { align: CENTER, text: "Pause", text_font: manrope_15, text_color: $color_on_accent }
+
+      # 2x3 tile grid — flex_grow:1 makes it absorb remaining height (no scroll)
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 14
+          layout:
+            type: grid
+            grid_columns: [FR(1), FR(1)]
+            grid_rows: [FR(1), FR(1), FR(1)]
+            grid_column_align: STRETCH
+            grid_row_align: STRETCH
+            pad_column: 10
+            pad_row: 10
+          widgets:
+            - &tile_def
+              button:
+                styles: tile
+                grid_cell_column_pos: 0
+                grid_cell_row_pos: 0
+                grid_cell_x_align: STRETCH
+                grid_cell_y_align: STRETCH
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 15 }
+                on_click: { lvgl.page.show: page_scenes }
+                widgets:
+                  - label: { text: "${i_scenes}", styles: icon_neutral }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - label: { text: "Scenes", styles: tile_title }
+                        - label: { id: lbl_scene_sub, text: "Movie active", styles: tile_sub }
+            - button:
+                styles: tile
+                grid_cell_column_pos: 1
+                grid_cell_row_pos: 0
+                grid_cell_x_align: STRETCH
+                grid_cell_y_align: STRETCH
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 15 }
+                on_click: { lvgl.page.show: page_music }
+                widgets:
+                  - label: { text: "${i_music}", styles: icon_neutral }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - label: { text: "Music", styles: tile_title }
+                        - label: { id: lbl_music_sub, text: "Holocene", styles: tile_sub }
+            - button:
+                styles: tile
+                grid_cell_column_pos: 0
+                grid_cell_row_pos: 1
+                grid_cell_x_align: STRETCH
+                grid_cell_y_align: STRETCH
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 15 }
+                on_click: { lvgl.page.show: page_shades }
+                widgets:
+                  - label: { text: "${i_blinds}", styles: icon_neutral }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - label: { text: "Shades", styles: tile_title }
+                        - label: { id: lbl_shade_sub, text: "2 of 3 open", styles: tile_sub }
+            - button:
+                styles: tile
+                grid_cell_column_pos: 1
+                grid_cell_row_pos: 1
+                grid_cell_x_align: STRETCH
+                grid_cell_y_align: STRETCH
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 15 }
+                on_click: { lvgl.page.show: page_security }
+                widgets:
+                  - label: { id: lbl_alarm_icon, text: "${i_shield}", styles: icon_neutral }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - label: { text: "Alarm", styles: tile_title }
+                        - label: { id: lbl_alarm_sub, text: "Disarmed", styles: tile_sub }
+            - button:
+                styles: tile
+                grid_cell_column_pos: 0
+                grid_cell_row_pos: 2
+                grid_cell_x_align: STRETCH
+                grid_cell_y_align: STRETCH
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 15 }
+                on_click: { lvgl.page.show: page_pool }
+                widgets:
+                  - label: { text: "${i_pool}", styles: icon_neutral }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - label: { text: "Pool", styles: tile_title }
+                        - label: { id: lbl_pool_sub, text: "Heater 84° · High", styles: tile_sub }
+            - button:
+                styles: tile
+                grid_cell_column_pos: 1
+                grid_cell_row_pos: 2
+                grid_cell_x_align: STRETCH
+                grid_cell_y_align: STRETCH
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 15 }
+                on_click: { lvgl.page.show: page_settings }
+                widgets:
+                  - label: { text: "${i_tune}", styles: icon_neutral }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - label: { text: "Settings", styles: tile_title }
+                        - label: { id: lbl_settings_sub, text: "8 enabled", styles: tile_sub }
+
+  # ---------------------------------------------------------------
+  #  2. SCENES
+  # ---------------------------------------------------------------
+  - id: page_scenes
+    bg_color: $color_bg
+    bg_opa: COVER
+    scrollbar_mode: "OFF"
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - &header_scenes
+        obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+          widgets:
+            - button:
+                styles: back_btn
+                on_click: { lvgl.page.show: page_home }
+                widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ]
+            - label: { text: "Scenes", styles: title }
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 18
+          scrollbar_mode: AUTO
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 12 }
+          widgets:
+            # 3 rows of 2 scene cards
+            - obj:
+                styles: plain
+                width: 100%
+                height: 108
+                layout: { type: flex, flex_flow: ROW, pad_column: 12 }
+                widgets:
+                  - &scene_card
+                    button:
+                      flex_grow: 1
+                      height: 108
+                      styles: tile
+                      pad_all: 16
+                      layout: { type: flex, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN }
+                      on_click: { script.execute: { id: ha_scene, eid: "${scene_morning}" } }
+                      widgets:
+                        - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_morning}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - label: { text: "Morning", text_font: manrope_18, text_color: $color_text }
+                  - button:
+                      flex_grow: 1
+                      height: 108
+                      styles: tile
+                      pad_all: 16
+                      layout: { type: flex, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN }
+                      on_click: { script.execute: { id: ha_scene, eid: "${scene_movie}" } }
+                      widgets:
+                        - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_movie}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - label: { text: "Movie", text_font: manrope_18, text_color: $color_text }
+            - obj:
+                styles: plain
+                width: 100%
+                height: 108
+                layout: { type: flex, flex_flow: ROW, pad_column: 12 }
+                widgets:
+                  - button:
+                      flex_grow: 1
+                      height: 108
+                      styles: tile
+                      pad_all: 16
+                      layout: { type: flex, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN }
+                      on_click: { script.execute: { id: ha_scene, eid: "${scene_away}" } }
+                      widgets:
+                        - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_luggage}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - label: { text: "Away", text_font: manrope_18, text_color: $color_text }
+                  - button:
+                      flex_grow: 1
+                      height: 108
+                      styles: tile
+                      pad_all: 16
+                      layout: { type: flex, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN }
+                      on_click: { script.execute: { id: ha_scene, eid: "${scene_goodnight}" } }
+                      widgets:
+                        - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_night}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - label: { text: "Goodnight", text_font: manrope_18, text_color: $color_text }
+            - obj:
+                styles: plain
+                width: 100%
+                height: 108
+                layout: { type: flex, flex_flow: ROW, pad_column: 12 }
+                widgets:
+                  - button:
+                      flex_grow: 1
+                      height: 108
+                      styles: tile
+                      pad_all: 16
+                      layout: { type: flex, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN }
+                      on_click: { script.execute: { id: ha_scene, eid: "${scene_dinner}" } }
+                      widgets:
+                        - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_dinner}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - label: { text: "Dinner", text_font: manrope_18, text_color: $color_text }
+                  - button:
+                      flex_grow: 1
+                      height: 108
+                      styles: tile
+                      pad_all: 16
+                      layout: { type: flex, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN }
+                      on_click: { script.execute: { id: ha_scene, eid: "${scene_focus}" } }
+                      widgets:
+                        - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_focus}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - label: { text: "Focus", text_font: manrope_18, text_color: $color_text }
+            # All Off — full width pill
+            - button:
+                width: 100%
+                height: 58
+                bg_color: $color_surface
+                bg_opa: COVER
+                radius: 18
+                border_width: 1
+                border_color: $color_border
+                border_opa: 8%
+                layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER, pad_column: 10 }
+                on_click: { script.execute: { id: ha_scene, eid: "${scene_all_off}" } }
+                widgets:
+                  - label: { text: "${i_power}", text_font: icons_24, text_color: $color_icon }
+                  - label: { text: "All Off", text_font: manrope_18, text_color: $color_text }
+
+  # ---------------------------------------------------------------
+  #  3. MUSIC
+  # ---------------------------------------------------------------
+  - id: page_music
+    bg_color: $color_bg
+    bg_opa: COVER
+    scrollbar_mode: "OFF"
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+          widgets:
+            - button: { styles: back_btn, on_click: { lvgl.page.show: page_home }, widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ] }
+            - label: { text: "Music", styles: title }
+      - obj:
+          styles: card
+          width: 100%
+          margin_left: 16
+          margin_right: 16
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 16 }
+          widgets:
+            # now-playing row
+            - obj:
+                styles: plain
+                width: 100%
+                height: 104
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 16 }
+                widgets:
+                  - obj:
+                      width: 104
+                      height: 104
+                      radius: 16
+                      bg_color: $color_surface_raised
+                      bg_opa: COVER
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      pad_all: 0
+                      widgets: [ { label: { align: CENTER, text: "${i_album}", text_font: icons_34, text_color: $color_dim } } ]
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 4 }
+                      widgets:
+                        - obj:
+                            styles: plain
+                            width: SIZE_CONTENT
+                            height: SIZE_CONTENT
+                            layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 5 }
+                            widgets:
+                              - label: { text: "${i_eq}", text_font: icons_22, text_color: $color_accent }
+                              - label: { id: lbl_room, text: "Living Room", text_font: manrope_13, text_color: $color_accent }
+                        - label: { id: lbl_track, text: "Holocene", text_font: manrope_24, text_color: $color_text, long_mode: DOT, width: 220 }
+                        - label: { id: lbl_artist, text: "Bon Iver", text_font: manrope_15, text_color: $color_text2 }
+            # progress bar
+            - bar:
+                id: bar_progress
+                width: 100%
+                height: 6
+                min_value: 0
+                max_value: 100
+                value: 41
+                bg_color: $color_border
+                bg_opa: 9%
+                indicator: { bg_color: $color_accent, bg_opa: COVER }
+            # transport
+            - obj:
+                styles: plain
+                width: 100%
+                height: 64
+                layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER, pad_column: 24 }
+                widgets:
+                  - label: { text: "${i_shuffle}", text_font: icons_22, text_color: $color_dim }
+                  - label: { text: "${i_prev}", text_font: icons_34, text_color: $color_text }
+                  - button:
+                      id: btn_play
+                      width: 64
+                      height: 64
+                      radius: 32
+                      bg_color: $color_accent
+                      bg_opa: COVER
+                      on_click:
+                        - homeassistant.action: { action: media_player.media_play_pause, data: { entity_id: "${entity_media_player}" } }
+                      widgets: [ { label: { id: lbl_play, align: CENTER, text: "${i_pause}", text_font: icons_34, text_color: $color_on_accent } } ]
+                  - label: { text: "${i_next}", text_font: icons_34, text_color: $color_text }
+                  - label: { text: "${i_repeat}", text_font: icons_22, text_color: $color_dim }
+            # volume
+            - obj:
+                styles: plain
+                width: 100%
+                height: SIZE_CONTENT
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                widgets:
+                  - label: { text: "${i_vol}", text_font: icons_22, text_color: $color_dim }
+                  - slider:
+                      id: sld_volume
+                      flex_grow: 1
+                      height: 8
+                      min_value: 0
+                      max_value: 100
+                      value: 38
+                      bg_color: $color_border
+                      bg_opa: 9%
+                      indicator: { bg_color: $color_accent, bg_opa: COVER, radius: 4 }
+                      knob: { bg_color: $color_text, bg_opa: COVER, radius: 9, pad_all: 7 }
+                      on_release:
+                        - homeassistant.action:
+                            action: media_player.volume_set
+                            data: { entity_id: "${entity_media_player}", volume_level: !lambda 'return x/100.0;' }
+                  - label: { id: lbl_volnum, text: "38", text_font: manrope_15, text_color: $color_icon, width: 32 }
+      # rooms
+      - label: { text: "PLAYING IN", styles: section, margin_left: 18, margin_top: 18, margin_bottom: 10 }
+      - obj:
+          styles: plain
+          width: 100%
+          height: 48
+          pad_left: 16
+          pad_right: 16
+          scrollbar_mode: "OFF"
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 8 }
+          widgets:
+            - &room_chip
+              button:
+                width: SIZE_CONTENT
+                height: 44
+                radius: 22
+                pad_left: 16
+                pad_right: 16
+                bg_color: $color_accent
+                bg_opa: 16%
+                border_width: 1
+                border_color: $color_accent
+                border_opa: 50%
+                widgets: [ { label: { align: CENTER, text: "Living Room", text_font: manrope_14, text_color: $color_accent_light } } ]
+            - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Kitchen", text_font: manrope_14, text_color: $color_icon } } ] }
+            - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Bedroom", text_font: manrope_14, text_color: $color_icon } } ] }
+            - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Whole Home", text_font: manrope_14, text_color: $color_icon } } ] }
+
+  # ---------------------------------------------------------------
+  #  4. SHADES
+  # ---------------------------------------------------------------
+  - id: page_shades
+    bg_color: $color_bg
+    bg_opa: COVER
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+          widgets:
+            - button: { styles: back_btn, on_click: { lvgl.page.show: page_home }, widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ] }
+            - label: { text: "Shades", styles: title }
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 18
+          scrollbar_mode: AUTO
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 11 }
+          widgets:
+            # master open/close
+            - obj:
+                styles: card
+                width: 100%
+                pad_top: 15
+                pad_bottom: 15
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+                widgets:
+                  - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_blinds}", text_font: icons_24, text_color: $color_icon } } ] }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 2 }
+                      widgets:
+                        - label: { text: "All Shades", text_font: manrope_18, text_color: $color_text }
+                        - label: { text: "2 of 3 open", text_font: manrope_13, text_color: $color_text2 }
+                  - button:
+                      width: SIZE_CONTENT
+                      height: 40
+                      radius: 12
+                      pad_left: 15
+                      pad_right: 15
+                      bg_color: $color_accent
+                      bg_opa: 16%
+                      border_width: 1
+                      border_color: $color_accent
+                      border_opa: 40%
+                      on_click: { homeassistant.action: { action: cover.open_cover, data: { entity_id: "${cover_living},${cover_bedroom},${cover_kitchen}" } } }
+                      widgets: [ { label: { align: CENTER, text: "Open", text_font: manrope_14, text_color: $color_accent_light } } ]
+                  - button:
+                      width: SIZE_CONTENT
+                      height: 40
+                      radius: 12
+                      pad_left: 15
+                      pad_right: 15
+                      bg_color: $color_border
+                      bg_opa: 6%
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 10%
+                      on_click: { homeassistant.action: { action: cover.close_cover, data: { entity_id: "${cover_living},${cover_bedroom},${cover_kitchen}" } } }
+                      widgets: [ { label: { align: CENTER, text: "Close", text_font: manrope_14, text_color: $color_icon } } ]
+            # per-group cards (Living Room / Bedroom / Kitchen)
+            - &shade_card
+              obj:
+                styles: card
+                width: 100%
+                layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 14 }
+                widgets:
+                  - obj:
+                      styles: plain
+                      width: 100%
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
+                      widgets:
+                        - label: { text: "Living Room", text_font: manrope_18, text_color: $color_text }
+                        - label: { id: lbl_shade_living, text: "65% open", text_font: manrope_14, text_color: $color_text2 }
+                  - obj:
+                      styles: plain
+                      width: 100%
+                      height: 44
+                      layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                      widgets:
+                        - button: { width: 44, height: 44, radius: 12, bg_color: $color_surface_raised, bg_opa: COVER, on_click: { homeassistant.action: { action: cover.close_cover, data: { entity_id: "${cover_living}" } } }, widgets: [ { label: { align: CENTER, text: "${i_chevron_d}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - slider:
+                            id: sld_shade_living
+                            flex_grow: 1
+                            height: 8
+                            min_value: 0
+                            max_value: 100
+                            value: 65
+                            bg_color: $color_border
+                            bg_opa: 9%
+                            indicator: { bg_color: $color_accent, bg_opa: COVER, radius: 4 }
+                            knob: { bg_color: $color_text, bg_opa: COVER, radius: 9, pad_all: 7 }
+                            on_release: { homeassistant.action: { action: cover.set_cover_position, data: { entity_id: "${cover_living}", position: !lambda 'return x;' } } }
+                        - button: { width: 44, height: 44, radius: 12, bg_color: $color_surface_raised, bg_opa: COVER, on_click: { homeassistant.action: { action: cover.open_cover, data: { entity_id: "${cover_living}" } } }, widgets: [ { label: { align: CENTER, text: "${i_chevron_u}", text_font: icons_24, text_color: $color_icon } } ] }
+            - obj:
+                styles: card
+                width: 100%
+                layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 14 }
+                widgets:
+                  - obj:
+                      styles: plain
+                      width: 100%
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
+                      widgets:
+                        - label: { text: "Bedroom", text_font: manrope_18, text_color: $color_text }
+                        - label: { id: lbl_shade_bedroom, text: "Closed", text_font: manrope_14, text_color: $color_text2 }
+                  - obj:
+                      styles: plain
+                      width: 100%
+                      height: 44
+                      layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                      widgets:
+                        - button: { width: 44, height: 44, radius: 12, bg_color: $color_surface_raised, bg_opa: COVER, on_click: { homeassistant.action: { action: cover.close_cover, data: { entity_id: "${cover_bedroom}" } } }, widgets: [ { label: { align: CENTER, text: "${i_chevron_d}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - slider:
+                            id: sld_shade_bedroom
+                            flex_grow: 1
+                            height: 8
+                            min_value: 0
+                            max_value: 100
+                            value: 0
+                            bg_color: $color_border
+                            bg_opa: 9%
+                            indicator: { bg_color: $color_accent, bg_opa: COVER, radius: 4 }
+                            knob: { bg_color: $color_text, bg_opa: COVER, radius: 9, pad_all: 7 }
+                            on_release: { homeassistant.action: { action: cover.set_cover_position, data: { entity_id: "${cover_bedroom}", position: !lambda 'return x;' } } }
+                        - button: { width: 44, height: 44, radius: 12, bg_color: $color_surface_raised, bg_opa: COVER, on_click: { homeassistant.action: { action: cover.open_cover, data: { entity_id: "${cover_bedroom}" } } }, widgets: [ { label: { align: CENTER, text: "${i_chevron_u}", text_font: icons_24, text_color: $color_icon } } ] }
+            - obj:
+                styles: card
+                width: 100%
+                layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 14 }
+                widgets:
+                  - obj:
+                      styles: plain
+                      width: 100%
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
+                      widgets:
+                        - label: { text: "Kitchen", text_font: manrope_18, text_color: $color_text }
+                        - label: { id: lbl_shade_kitchen, text: "Open", text_font: manrope_14, text_color: $color_text2 }
+                  - obj:
+                      styles: plain
+                      width: 100%
+                      height: 44
+                      layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                      widgets:
+                        - button: { width: 44, height: 44, radius: 12, bg_color: $color_surface_raised, bg_opa: COVER, on_click: { homeassistant.action: { action: cover.close_cover, data: { entity_id: "${cover_kitchen}" } } }, widgets: [ { label: { align: CENTER, text: "${i_chevron_d}", text_font: icons_24, text_color: $color_icon } } ] }
+                        - slider:
+                            id: sld_shade_kitchen
+                            flex_grow: 1
+                            height: 8
+                            min_value: 0
+                            max_value: 100
+                            value: 100
+                            bg_color: $color_border
+                            bg_opa: 9%
+                            indicator: { bg_color: $color_accent, bg_opa: COVER, radius: 4 }
+                            knob: { bg_color: $color_text, bg_opa: COVER, radius: 9, pad_all: 7 }
+                            on_release: { homeassistant.action: { action: cover.set_cover_position, data: { entity_id: "${cover_kitchen}", position: !lambda 'return x;' } } }
+                        - button: { width: 44, height: 44, radius: 12, bg_color: $color_surface_raised, bg_opa: COVER, on_click: { homeassistant.action: { action: cover.open_cover, data: { entity_id: "${cover_kitchen}" } } }, widgets: [ { label: { align: CENTER, text: "${i_chevron_u}", text_font: icons_24, text_color: $color_icon } } ] }
+
+  # ---------------------------------------------------------------
+  #  5. SECURITY  (fits 480 — no scroll: status + keypad + arm row)
+  # ---------------------------------------------------------------
+  - id: page_security
+    bg_color: $color_bg
+    bg_opa: COVER
+    scrollbar_mode: "OFF"
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+          widgets:
+            - button: { styles: back_btn, on_click: { lvgl.page.show: page_home }, widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ] }
+            - label: { text: "Security", styles: title }
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 16
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 12 }
+          widgets:
+            # status card with code dots
+            - obj:
+                styles: card
+                width: 100%
+                pad_top: 13
+                pad_bottom: 13
+                pad_left: 15
+                pad_right: 15
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+                widgets:
+                  - obj: { width: 46, height: 46, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_check}", text_font: icons_24, text_color: $color_icon } } ] }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 2 }
+                      widgets:
+                        - label: { id: lbl_sec_title, text: "Ready to arm", text_font: manrope_20, text_color: $color_text }
+                        - label: { text: "All doors closed · 12 sensors OK", text_font: manrope_13, text_color: $color_text2 }
+                  - obj:
+                      styles: plain
+                      width: SIZE_CONTENT
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 9 }
+                      widgets:
+                        - obj: { id: dot0, width: 14, height: 14, radius: 7, bg_color: $color_accent, bg_opa: TRANSP, border_width: 2, border_color: $color_accent, border_opa: 40%, pad_all: 0 }
+                        - obj: { id: dot1, width: 14, height: 14, radius: 7, bg_color: $color_accent, bg_opa: TRANSP, border_width: 2, border_color: $color_accent, border_opa: 40%, pad_all: 0 }
+                        - obj: { id: dot2, width: 14, height: 14, radius: 7, bg_color: $color_accent, bg_opa: TRANSP, border_width: 2, border_color: $color_accent, border_opa: 40%, pad_all: 0 }
+                        - obj: { id: dot3, width: 14, height: 14, radius: 7, bg_color: $color_accent, bg_opa: TRANSP, border_width: 2, border_color: $color_accent, border_opa: 40%, pad_all: 0 }
+            # keypad (3x4) — fills remaining height
+            - obj:
+                styles: plain
+                width: 100%
+                flex_grow: 1
+                layout:
+                  type: grid
+                  grid_columns: [FR(1), FR(1), FR(1)]
+                  grid_rows: [FR(1), FR(1), FR(1), FR(1)]
+                  grid_column_align: STRETCH
+                  grid_row_align: STRETCH
+                  pad_column: 9
+                  pad_row: 9
+                widgets:
+                  - &key
+                    button:
+                      grid_cell_column_pos: 0
+                      grid_cell_row_pos: 0
+                      grid_cell_x_align: STRETCH
+                      grid_cell_y_align: STRETCH
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      on_click: { script.execute: { id: code_append, d: "1" } }
+                      widgets: [ { label: { align: CENTER, text: "1", text_font: manrope_27, text_color: $color_text } } ]
+                  - button: { grid_cell_column_pos: 1, grid_cell_row_pos: 0, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "2" } }, widgets: [ { label: { align: CENTER, text: "2", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 2, grid_cell_row_pos: 0, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "3" } }, widgets: [ { label: { align: CENTER, text: "3", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 0, grid_cell_row_pos: 1, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "4" } }, widgets: [ { label: { align: CENTER, text: "4", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 1, grid_cell_row_pos: 1, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "5" } }, widgets: [ { label: { align: CENTER, text: "5", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 2, grid_cell_row_pos: 1, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "6" } }, widgets: [ { label: { align: CENTER, text: "6", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 0, grid_cell_row_pos: 2, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "7" } }, widgets: [ { label: { align: CENTER, text: "7", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 1, grid_cell_row_pos: 2, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "8" } }, widgets: [ { label: { align: CENTER, text: "8", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 2, grid_cell_row_pos: 2, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "9" } }, widgets: [ { label: { align: CENTER, text: "9", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 0, grid_cell_row_pos: 3, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_border, bg_opa: 4%, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: code_clear }, widgets: [ { label: { align: CENTER, text: "${i_close}", text_font: icons_22, text_color: $color_dim } } ] }
+                  - button: { grid_cell_column_pos: 1, grid_cell_row_pos: 3, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_surface, bg_opa: COVER, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: { id: code_append, d: "0" } }, widgets: [ { label: { align: CENTER, text: "0", text_font: manrope_27, text_color: $color_text } } ] }
+                  - button: { grid_cell_column_pos: 2, grid_cell_row_pos: 3, grid_cell_x_align: STRETCH, grid_cell_y_align: STRETCH, bg_color: $color_border, bg_opa: 4%, radius: 14, border_width: 1, border_color: $color_border, border_opa: 8%, on_click: { script.execute: code_backspace }, widgets: [ { label: { align: CENTER, text: "${i_backspace}", text_font: icons_24, text_color: $color_icon } } ] }
+            # arm-mode row
+            - obj:
+                styles: plain
+                width: 100%
+                height: 52
+                layout: { type: flex, flex_flow: ROW, pad_column: 10 }
+                widgets:
+                  - button:
+                      flex_grow: 1
+                      height: 52
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER, pad_column: 8 }
+                      on_click: { homeassistant.action: { action: alarm_control_panel.alarm_arm_away, data: { entity_id: "${entity_alarm}" } } }
+                      widgets:
+                        - label: { text: "${i_walk}", text_font: icons_22, text_color: $color_icon }
+                        - label: { text: "Away", text_font: manrope_15, text_color: $color_text }
+                  - button:
+                      flex_grow: 1
+                      height: 52
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER, pad_column: 8 }
+                      on_click: { homeassistant.action: { action: alarm_control_panel.alarm_arm_home, data: { entity_id: "${entity_alarm}" } } }
+                      widgets:
+                        - label: { text: "${i_home}", text_font: icons_22, text_color: $color_icon }
+                        - label: { text: "Home", text_font: manrope_15, text_color: $color_text }
+                  - button:
+                      flex_grow: 1
+                      height: 52
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER, pad_column: 8 }
+                      on_click: { homeassistant.action: { action: alarm_control_panel.alarm_arm_night, data: { entity_id: "${entity_alarm}" } } }
+                      widgets:
+                        - label: { text: "${i_night}", text_font: icons_22, text_color: $color_icon }
+                        - label: { text: "Night", text_font: manrope_15, text_color: $color_text }
+
+  # ---------------------------------------------------------------
+  #  6. SPRINKLERS (reached from the Home banner)
+  # ---------------------------------------------------------------
+  - id: page_sprinklers
+    bg_color: $color_bg
+    bg_opa: COVER
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+          widgets:
+            - button: { styles: back_btn, on_click: { lvgl.page.show: page_home }, widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ] }
+            - label: { text: "Sprinklers", styles: title }
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 18
+          scrollbar_mode: AUTO
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 11 }
+          widgets:
+            # running card (visible when active)
+            - obj:
+                id: card_sprinkler_run
+                width: 100%
+                bg_color: $color_accent
+                bg_opa: 10%
+                radius: 18
+                border_width: 1
+                border_color: $color_accent
+                border_opa: 30%
+                pad_all: 18
+                layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 16 }
+                widgets:
+                  - obj:
+                      styles: plain
+                      width: 100%
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                      widgets:
+                        - obj: { width: 44, height: 44, radius: 13, bg_color: $color_accent, bg_opa: 20%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_water}", text_font: icons_24, text_color: $color_accent } } ] }
+                        - obj:
+                            styles: plain
+                            flex_grow: 1
+                            height: SIZE_CONTENT
+                            layout: { type: flex, flex_flow: COLUMN, pad_row: 2 }
+                            widgets:
+                              - label: { text: "Watering now", text_font: manrope_18, text_color: $color_accent_light }
+                              - label: { id: lbl_spr_zone, text: "Front Lawn · Zone 2", text_font: manrope_14, text_color: $color_text2 }
+                        - obj:
+                            styles: plain
+                            width: SIZE_CONTENT
+                            height: SIZE_CONTENT
+                            layout: { type: flex, flex_flow: COLUMN, flex_align_cross: END }
+                            widgets:
+                              - label: { id: lbl_spr_time, text: "12:40", text_font: manrope_24, text_color: $color_text }
+                              - label: { text: "remaining", text_font: manrope_13, text_color: $color_text2 }
+                  - button:
+                      width: 100%
+                      height: 52
+                      bg_color: $color_accent
+                      bg_opa: COVER
+                      radius: 14
+                      layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER, pad_column: 8 }
+                      on_click: { homeassistant.action: { action: switch.turn_off, data: { entity_id: "${switch_sprinkler}" } } }
+                      widgets:
+                        - label: { text: "${i_pause}", text_font: icons_22, text_color: $color_on_accent }
+                        - label: { text: "Pause watering", text_font: manrope_17, text_color: $color_on_accent }
+            # idle card (visible when not running)
+            - obj:
+                id: card_sprinkler_idle
+                hidden: true
+                styles: card
+                width: 100%
+                pad_all: 18
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                widgets:
+                  - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_pause_circ}", text_font: icons_24, text_color: $color_dim } } ] }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 2 }
+                      widgets:
+                        - label: { text: "Watering paused", text_font: manrope_18, text_color: $color_text }
+                        - label: { text: "Next run · 6:00 AM", text_font: manrope_14, text_color: $color_text2 }
+                  - button:
+                      width: SIZE_CONTENT
+                      height: 44
+                      radius: 12
+                      pad_left: 17
+                      pad_right: 17
+                      bg_color: $color_accent
+                      bg_opa: 16%
+                      border_width: 1
+                      border_color: $color_accent
+                      border_opa: 40%
+                      on_click: { homeassistant.action: { action: switch.turn_on, data: { entity_id: "${switch_sprinkler}" } } }
+                      widgets: [ { label: { align: CENTER, text: "Resume", text_font: manrope_15, text_color: $color_accent_light } } ]
+            - label: { text: "ZONES", styles: section, margin_top: 6, margin_left: 2, margin_bottom: 4 }
+            - &zone_row
+              obj:
+                styles: card
+                width: 100%
+                pad_all: 14
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                widgets:
+                  - label: { text: "${i_water}", text_font: icons_22, text_color: $color_accent }
+                  - label: { text: "Front Lawn", text_font: manrope_16, text_color: $color_text, flex_grow: 1 }
+                  - obj: { width: SIZE_CONTENT, height: 28, radius: 14, bg_color: $color_accent, bg_opa: 14%, border_width: 0, pad_left: 12, pad_right: 12, pad_top: 0, pad_bottom: 0, layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER }, widgets: [ { label: { text: "Running", text_font: manrope_13, text_color: $color_accent } } ] }
+            - obj:
+                styles: card
+                width: 100%
+                pad_all: 14
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                widgets:
+                  - label: { text: "${i_water}", text_font: icons_22, text_color: $color_warning }
+                  - label: { text: "Back Lawn", text_font: manrope_16, text_color: $color_text, flex_grow: 1 }
+                  - obj: { width: SIZE_CONTENT, height: 28, radius: 14, bg_color: $color_warning, bg_opa: 14%, border_width: 0, pad_left: 12, pad_right: 12, layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER }, widgets: [ { label: { text: "Queued", text_font: manrope_13, text_color: $color_warning } } ] }
+            - obj:
+                styles: card
+                width: 100%
+                pad_all: 14
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                widgets:
+                  - label: { text: "${i_water}", text_font: icons_22, text_color: $color_dim }
+                  - label: { text: "Garden Beds", text_font: manrope_16, text_color: $color_text, flex_grow: 1 }
+                  - obj: { width: SIZE_CONTENT, height: 28, radius: 14, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_left: 12, pad_right: 12, layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER }, widgets: [ { label: { text: "Idle", text_font: manrope_13, text_color: $color_dim } } ] }
+            - obj:
+                styles: card
+                width: 100%
+                pad_all: 14
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                widgets:
+                  - label: { text: "${i_water}", text_font: icons_22, text_color: $color_dim }
+                  - label: { text: "Side Yard", text_font: manrope_16, text_color: $color_text, flex_grow: 1 }
+                  - obj: { width: SIZE_CONTENT, height: 28, radius: 14, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_left: 12, pad_right: 12, layout: { type: flex, flex_flow: ROW, flex_align_main: CENTER, flex_align_cross: CENTER }, widgets: [ { label: { text: "Idle", text_font: manrope_13, text_color: $color_dim } } ] }
+
+  # ---------------------------------------------------------------
+  #  7. ALERTS
+  # ---------------------------------------------------------------
+  - id: page_alerts
+    bg_color: $color_bg
+    bg_opa: COVER
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_right: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
+          widgets:
+            - obj:
+                styles: plain
+                width: SIZE_CONTENT
+                height: SIZE_CONTENT
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+                widgets:
+                  - button: { styles: back_btn, on_click: { lvgl.page.show: page_home }, widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ] }
+                  - label: { text: "Alerts", styles: title }
+            - label: { text: "Clear all", text_font: manrope_14, text_color: $color_dim }
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 18
+          scrollbar_mode: AUTO
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 10 }
+          widgets:
+            - &alert_row
+              obj:
+                styles: card
+                width: 100%
+                pad_all: 15
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: START, pad_column: 12 }
+                widgets:
+                  - obj: { width: 42, height: 42, radius: 13, bg_color: $color_alert, bg_opa: 14%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_flash}", text_font: icons_22, text_color: $color_alert } } ] }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - obj:
+                            styles: plain
+                            width: 100%
+                            height: SIZE_CONTENT
+                            layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN }
+                            widgets:
+                              - label: { text: "Power Outage", text_font: manrope_17, text_color: $color_text }
+                              - label: { text: "2 min ago", text_font: manrope_13, text_color: $color_dim }
+                        - label: { text: "Mains power lost · running on battery backup", text_font: manrope_14, text_color: 0xA5A299, long_mode: WRAP, width: 320 }
+            - obj:
+                styles: card
+                width: 100%
+                pad_all: 15
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: START, pad_column: 12 }
+                widgets:
+                  - obj: { width: 42, height: 42, radius: 13, bg_color: $color_warning, bg_opa: 14%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_door}", text_font: icons_22, text_color: $color_warning } } ] }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - obj:
+                            styles: plain
+                            width: 100%
+                            height: SIZE_CONTENT
+                            layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN }
+                            widgets:
+                              - label: { text: "Garage Door Open", text_font: manrope_17, text_color: $color_text }
+                              - label: { text: "18 min ago", text_font: manrope_13, text_color: $color_dim }
+                        - label: { text: "Open for 22 minutes", text_font: manrope_14, text_color: 0xA5A299 }
+            - obj:
+                styles: card
+                width: 100%
+                pad_all: 15
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: START, pad_column: 12 }
+                widgets:
+                  - obj: { width: 42, height: 42, radius: 13, bg_color: $color_accent, bg_opa: 14%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_lock}", text_font: icons_22, text_color: $color_accent } } ] }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 3 }
+                      widgets:
+                        - obj:
+                            styles: plain
+                            width: 100%
+                            height: SIZE_CONTENT
+                            layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN }
+                            widgets:
+                              - label: { text: "Front Door Locked", text_font: manrope_17, text_color: $color_text }
+                              - label: { text: "1 hr ago", text_font: manrope_13, text_color: $color_dim }
+                        - label: { text: "Auto-locked at 9:00 PM", text_font: manrope_14, text_color: 0xA5A299 }
+
+  # ---------------------------------------------------------------
+  #  8. POOL
+  # ---------------------------------------------------------------
+  - id: page_pool
+    bg_color: $color_bg
+    bg_opa: COVER
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+          widgets:
+            - button: { styles: back_btn, on_click: { lvgl.page.show: page_home }, widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ] }
+            - label: { text: "Pool", styles: title }
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 18
+          scrollbar_mode: AUTO
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 16 }
+          widgets:
+            # water temperature
+            - obj:
+                styles: card
+                width: 100%
+                pad_top: 15
+                pad_bottom: 15
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+                widgets:
+                  - obj: { width: 44, height: 44, radius: 13, bg_color: $color_accent, bg_opa: 16%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_waves}", text_font: icons_24, text_color: $color_accent } } ] }
+                  - obj:
+                      styles: plain
+                      flex_grow: 1
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, pad_row: 2 }
+                      widgets:
+                        - label: { text: "Water Temperature", text_font: manrope_17, text_color: $color_text }
+                        - label: { text: "Pump & heater controls", text_font: manrope_13, text_color: $color_text2 }
+                  - label: { id: lbl_pool_water, text: "82°", text_font: manrope_28, text_color: $color_text }
+            # filter speed segmented control
+            - label: { text: "FILTER SPEED", styles: section, margin_left: 2 }
+            - obj:
+                styles: plain
+                width: 100%
+                height: 58
+                layout: { type: flex, flex_flow: ROW, pad_column: 8 }
+                widgets:
+                  - button:
+                      id: seg_off
+                      flex_grow: 1
+                      height: 58
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "Off" } } }
+                      widgets: [ { label: { align: CENTER, text: "Off", text_font: manrope_16, text_color: $color_icon } } ]
+                  - button:
+                      id: seg_low
+                      flex_grow: 1
+                      height: 58
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "Low" } } }
+                      widgets: [ { label: { align: CENTER, text: "Low", text_font: manrope_16, text_color: $color_icon } } ]
+                  - button:
+                      id: seg_med
+                      flex_grow: 1
+                      height: 58
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "Medium" } } }
+                      widgets: [ { label: { align: CENTER, text: "Med", text_font: manrope_16, text_color: $color_icon } } ]
+                  - button:
+                      id: seg_high
+                      flex_grow: 1
+                      height: 58
+                      bg_color: $color_accent
+                      bg_opa: 16%
+                      radius: 14
+                      border_width: 1
+                      border_color: $color_accent
+                      border_opa: 55%
+                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "High" } } }
+                      widgets: [ { label: { align: CENTER, text: "High", text_font: manrope_16, text_color: $color_accent_light } } ]
+            # heater
+            - label: { text: "HEATER", styles: section, margin_left: 2 }
+            - obj:
+                styles: card
+                width: 100%
+                pad_top: 13
+                pad_bottom: 13
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+                widgets:
+                  - obj: { width: 44, height: 44, radius: 13, bg_color: $color_accent, bg_opa: 16%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_heat}", text_font: icons_24, text_color: $color_accent } } ] }
+                  - label: { text: "Heater", text_font: manrope_17, text_color: $color_text, flex_grow: 1 }
+                  - switch:
+                      id: sw_heater
+                      width: 58
+                      height: 34
+                      bg_color: $color_border
+                      bg_opa: 12%
+                      indicator:
+                        checked: { bg_color: $color_accent, bg_opa: COVER }
+                      knob: { bg_color: $color_white, bg_opa: COVER }
+                      on_value:
+                        - homeassistant.action:
+                            action: !lambda 'return x ? "switch.turn_on" : "switch.turn_off";'
+                            data: { entity_id: "${switch_pool_heater}" }
+            # setpoint stepper
+            - obj:
+                styles: card
+                width: 100%
+                pad_top: 14
+                pad_bottom: 14
+                pad_left: 18
+                pad_right: 18
+                layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
+                widgets:
+                  - button:
+                      width: 60
+                      height: 60
+                      radius: 17
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      on_click:
+                        - homeassistant.action:
+                            action: number.set_value
+                            data: { entity_id: "${number_pool_setpoint}", value: !lambda 'return std::max(60.0f, id(num_pool_setpoint).state - 1.0f);' }
+                      widgets: [ { label: { align: CENTER, text: "${i_minus}", text_font: icons_28, text_color: $color_text } } ]
+                  - obj:
+                      styles: plain
+                      width: SIZE_CONTENT
+                      height: SIZE_CONTENT
+                      layout: { type: flex, flex_flow: COLUMN, flex_align_cross: CENTER, pad_row: 4 }
+                      widgets:
+                        - label: { id: lbl_setpoint, text: "84°", text_font: manrope_42, text_color: $color_text }
+                        - label: { text: "SET TEMPERATURE", styles: section }
+                  - button:
+                      width: 60
+                      height: 60
+                      radius: 17
+                      bg_color: $color_surface
+                      bg_opa: COVER
+                      border_width: 1
+                      border_color: $color_border
+                      border_opa: 8%
+                      on_click:
+                        - homeassistant.action:
+                            action: number.set_value
+                            data: { entity_id: "${number_pool_setpoint}", value: !lambda 'return std::min(104.0f, id(num_pool_setpoint).state + 1.0f);' }
+                      widgets: [ { label: { align: CENTER, text: "${i_plus}", text_font: icons_28, text_color: $color_text } } ]
+
+  # ---------------------------------------------------------------
+  #  9. SETTINGS  (grouped toggle list)
+  # ---------------------------------------------------------------
+  - id: page_settings
+    bg_color: $color_bg
+    bg_opa: COVER
+    pad_all: 0
+    layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH }
+    widgets:
+      - obj:
+          styles: plain
+          width: 100%
+          height: 60
+          pad_left: 18
+          pad_top: 17
+          layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 13 }
+          widgets:
+            - button: { styles: back_btn, on_click: { lvgl.page.show: page_home }, widgets: [ { label: { align: CENTER, text: "${i_back}", text_font: icons_22, text_color: $color_icon } } ] }
+            - label: { text: "Settings", styles: title }
+      - obj:
+          styles: plain
+          width: 100%
+          flex_grow: 1
+          pad_left: 16
+          pad_right: 16
+          pad_bottom: 18
+          scrollbar_mode: AUTO
+          layout: { type: flex, flex_flow: COLUMN, flex_align_cross: STRETCH, pad_row: 8 }
+          widgets:
+            # group header pattern: icon + title + divider
+            - &group_header
+              obj:
+                styles: plain
+                width: 100%
+                height: SIZE_CONTENT
+                margin_top: 12
+                margin_bottom: 2
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 9 }
+                widgets:
+                  - label: { text: "${i_home}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Home Modes", text_font: manrope_15, text_color: $color_text }
+                  - obj: { flex_grow: 1, height: 2, radius: 1, bg_color: $color_border, bg_opa: 10%, border_width: 0, pad_all: 0 }
+            # toggle row pattern: checkable button, checked => accent fill
+            - &toggle_row
+              button:
+                id: row_dinner
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_pill_off
+                bg_opa: COVER
+                border_width: 1
+                border_color: $color_border
+                border_opa: 8%
+                pad_left: 16
+                pad_right: 16
+                # checked-state styling -> solid accent
+                checked:
+                  bg_color: $color_accent
+                  bg_opa: COVER
+                  border_opa: 0%
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_dinner}" } }
+                widgets:
+                  - label: { text: "${i_party}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Dinner Party", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Off", text_font: manrope_14, text_color: $color_dim }
+            - button:
+                id: row_guests
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_pill_off
+                bg_opa: COVER
+                border_width: 1
+                border_color: $color_border
+                border_opa: 8%
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_guests}" } }
+                widgets:
+                  - label: { text: "${i_bed}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Overnight Guests", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Off", text_font: manrope_14, text_color: $color_dim }
+            - button:
+                id: row_cleaners
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_pill_off
+                bg_opa: COVER
+                border_width: 1
+                border_color: $color_border
+                border_opa: 8%
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_cleaners}" } }
+                widgets:
+                  - label: { text: "${i_broom}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Cleaners Mode", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Off", text_font: manrope_14, text_color: $color_dim }
+            - button:
+                id: row_away
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_pill_off
+                bg_opa: COVER
+                border_width: 1
+                border_color: $color_border
+                border_opa: 8%
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_away}" } }
+                widgets:
+                  - label: { text: "${i_luggage}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Away", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Off", text_font: manrope_14, text_color: $color_dim }
+            # Automations group
+            - obj:
+                styles: plain
+                width: 100%
+                height: SIZE_CONTENT
+                margin_top: 12
+                margin_bottom: 2
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 9 }
+                widgets:
+                  - label: { text: "${i_flash}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Automations", text_font: manrope_15, text_color: $color_text }
+                  - obj: { flex_grow: 1, height: 2, radius: 1, bg_color: $color_border, bg_opa: 10%, border_width: 0, pad_all: 0 }
+            - button:
+                id: row_autoarm_away
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_autoarm_away}" } }
+                widgets:
+                  - label: { text: "${i_shield}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Auto-Arm Away when leaving", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            - button:
+                id: row_autoarm_home
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_autoarm_home}" } }
+                widgets:
+                  - label: { text: "${i_night}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Auto-Arm Home at 11pm", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            - button:
+                id: row_autodisarm
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_autodisarm}" } }
+                widgets:
+                  - label: { text: "${i_lock_open}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Auto-Disarm at 7am", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            - button:
+                id: row_vacuum
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_vacuum}" } }
+                widgets:
+                  - label: { text: "${i_broom}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Nightly Vacuum at 12am", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            # Climate Schedules group
+            - obj:
+                styles: plain
+                width: 100%
+                height: SIZE_CONTENT
+                margin_top: 12
+                margin_bottom: 2
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 9 }
+                widgets:
+                  - label: { text: "${i_fan}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Climate Schedules", text_font: manrope_15, text_color: $color_text }
+                  - obj: { flex_grow: 1, height: 2, radius: 1, bg_color: $color_border, bg_opa: 10%, border_width: 0, pad_all: 0 }
+            - button:
+                id: row_thermo_living
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_thermo_living}" } }
+                widgets:
+                  - label: { text: "${i_thermostat}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Living Room Thermostat", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            - button:
+                id: row_thermo_bed
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_thermo_bed}" } }
+                widgets:
+                  - label: { text: "${i_thermostat}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Bedroom Thermostat", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            - button:
+                id: row_thermo_office
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_pill_off
+                bg_opa: COVER
+                border_width: 1
+                border_color: $color_border
+                border_opa: 8%
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_thermo_office}" } }
+                widgets:
+                  - label: { text: "${i_thermostat}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Office Thermostat", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Off", text_font: manrope_14, text_color: $color_dim }
+            # Panel group
+            - obj:
+                styles: plain
+                width: 100%
+                height: SIZE_CONTENT
+                margin_top: 12
+                margin_bottom: 2
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 9 }
+                widgets:
+                  - label: { text: "${i_tune}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Panel", text_font: manrope_15, text_color: $color_text }
+                  - obj: { flex_grow: 1, height: 2, radius: 1, bg_color: $color_border, bg_opa: 10%, border_width: 0, pad_all: 0 }
+            - button:
+                id: row_auto_bright
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_auto_bright}" } }
+                widgets:
+                  - label: { text: "${i_brightness}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Auto Brightness", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            - button:
+                id: row_screensaver
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_accent
+                bg_opa: COVER
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_screensaver}" } }
+                widgets:
+                  - label: { text: "${i_monitor}", text_font: icons_22, text_color: $color_on_accent }
+                  - label: { text: "Screen Saver", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
+            - button:
+                id: row_touch_sounds
+                checkable: true
+                width: 100%
+                height: 54
+                radius: 15
+                bg_color: $color_pill_off
+                bg_opa: COVER
+                border_width: 1
+                border_color: $color_border
+                border_opa: 8%
+                pad_left: 16
+                pad_right: 16
+                checked: { bg_color: $color_accent, bg_opa: COVER, border_opa: 0% }
+                layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 12 }
+                on_click: { script.execute: { id: ha_toggle, eid: "${ib_touch_sounds}" } }
+                widgets:
+                  - label: { text: "${i_volume_up}", text_font: icons_22, text_color: $color_icon }
+                  - label: { text: "Touch Sounds", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Off", text_font: manrope_14, text_color: $color_dim }

@@ -1,0 +1,42 @@
+name: Validate ESPHome config
+
+# Runs `esphome config` on both the hardware target and the desktop
+# simulator every push / PR, so a broken YAML never reaches main.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ESPHome + SDL2 (SDL2 is needed to validate the simulator)
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+          pip install esphome
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev
+
+      - name: Create dummy secrets (real secrets are never committed)
+        run: |
+          cat > secrets.yaml <<EOF
+          wifi_ssid: "ci"
+          wifi_password: "ci-password"
+          api_encryption_key: "$(openssl rand -base64 32)"
+          ota_password: "ci-ota"
+          EOF
+
+      - name: Validate hardware config
+        run: esphome config nspanel-dashboard.yaml
+
+      - name: Validate simulator config
+        run: esphome config simulator/simulator.yaml

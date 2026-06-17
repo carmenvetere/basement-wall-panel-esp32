@@ -1,0 +1,18 @@
+# --- ESPHome ---
+# Real secrets must NEVER be committed. Copy secrets.yaml.example -> secrets.yaml
+secrets.yaml
+.esphome/
+*.bin
+build/
+
+# Python / venv
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/

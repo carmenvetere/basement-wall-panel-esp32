@@ -1,0 +1,44 @@
+# ===================================================================
+#  simulator.yaml  —  Desktop preview of the wall-panel dashboard
+#
+#  Runs the EXACT same LVGL UI + Home Assistant logic (common/dashboard.yaml)
+#  on your computer in an SDL window using ESPHome's "host" platform —
+#  NO ESP32 hardware needed. Your mouse acts as the touchscreen.
+#
+#  Two ways to use it:
+#   * Offline UI preview  -> just run it; HA-bound labels show defaults.
+#   * Live against HA     -> add this "device" in Home Assistant's ESPHome
+#                            integration (it connects over your network like
+#                            a real panel), then every control/sensor is live.
+#
+#  Run it:
+#     esphome run simulator/simulator.yaml
+#  (Needs SDL2 — see README "Step 2: Preview in the simulator".)
+# ===================================================================
+
+# ---- Shared core: design tokens, entities, fonts, HA bindings, UI ----
+packages:
+  core: !include ../common/dashboard.yaml
+
+esphome:
+  name: wall-panel-sim
+
+# Build + run on this computer instead of an ESP32.
+host:
+
+# API so the simulator can talk to Home Assistant (no encryption needed
+# on the host). Remove this block for a purely offline UI preview.
+api:
+
+# Render to an SDL window; the mouse acts as the touchscreen.
+display:
+  - platform: sdl
+    id: main_display
+    dimensions:
+      width: 480
+      height: 480
+
+touchscreen:
+  - platform: sdl
+    id: main_touch
+    display: main_display

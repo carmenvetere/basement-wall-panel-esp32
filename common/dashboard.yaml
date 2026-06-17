@@ -1,0 +1,572 @@
+# ===================================================================
+#  common/dashboard.yaml  —  SHARED core (hardware-independent)
+#
+#  Everything that is the same whether you run on a real ESP32-S3 panel
+#  or in the desktop simulator: design tokens + entity map, fonts,
+#  Home Assistant <-> widget bindings, scripts, and the LVGL UI itself.
+#
+#  Composed as a package by:
+#     nspanel-dashboard.yaml   (real hardware: ESP32-S3 + ST7701S + GT911)
+#     simulator/simulator.yaml (desktop preview: host + SDL)
+#
+#  Those files add the platform-specific bits (board, Wi-Fi/OTA, display,
+#  touchscreen). Do not add esp32:/display:/touchscreen: here.
+# ===================================================================
+
+substitutions:
+  device_name: "wall-panel"
+  friendly_name: "Wall Panel"
+
+  # ---- Colour palette (charcoal granite + single steel-blue accent) ----
+  color_bg:             "0x202327"   # screen background
+  color_surface:        "0x2B2F34"   # cards / tiles / keys
+  color_surface_raised: "0x353A40"   # pressed / secondary buttons
+  color_pill_off:       "0x363B41"   # settings row, OFF state
+  color_border:         "0xEAE6DD"   # border colour (used at 8% opa)
+  color_text:           "0xE9E5DD"   # primary text
+  color_text2:          "0x9A988F"   # secondary text
+  color_icon:           "0xB4AFA4"   # idle icons
+  color_dim:            "0x8B8980"   # tertiary / disabled
+  color_accent:         "0x7295B2"   # steel blue — active states only
+  color_accent_light:   "0xA9C4DD"   # text on accent-tinted surfaces
+  color_on_accent:      "0xF4F2EC"   # text/icon on solid accent
+  color_alert:          "0xC8805F"   # rust — critical alerts
+  color_warning:        "0xCBA14E"   # amber — warnings
+  color_white:          "0xFFFFFF"
+
+  # ---- TODO: Home Assistant entity IDs (placeholders) ----
+  entity_outdoor_temp:    "sensor.outdoor_temperature"
+  entity_weather:         "weather.home"
+
+  # scenes
+  entity_scene_select:    "input_select.active_scene"   # text_sensor mirror of current scene
+  scene_morning:          "scene.morning"
+  scene_movie:            "scene.movie"
+  scene_away:             "scene.away"
+  scene_goodnight:        "scene.goodnight"
+  scene_dinner:           "scene.dinner"
+  scene_focus:            "scene.focus"
+  scene_all_off:          "script.all_off"
+
+  # music
+  entity_media_player:    "media_player.living_room"
+
+  # shades (covers)
+  cover_living:           "cover.living_room_shades"
+  cover_bedroom:          "cover.bedroom_shades"
+  cover_kitchen:          "cover.kitchen_shades"
+
+  # alarm
+  entity_alarm:           "alarm_control_panel.home"
+  alarm_user_code:        "1234"                          # local pre-check before calling HA
+
+  # sprinklers
+  entity_sprinkler_run:   "binary_sensor.irrigation_active"
+  entity_sprinkler_zone:  "sensor.irrigation_current_zone"
+  entity_sprinkler_time:  "sensor.irrigation_time_remaining"
+  switch_sprinkler:       "switch.irrigation"
+
+  # alerts / power
+  entity_alert_count:     "sensor.active_alerts"          # numeric count -> badge
+  entity_power_outage:    "binary_sensor.grid_power_lost"
+
+  # pool
+  entity_pool_water:      "sensor.pool_water_temperature"
+  select_pool_filter:     "select.pool_pump_speed"        # options: Off/Low/Medium/High
+  switch_pool_heater:     "switch.pool_heater"
+  number_pool_setpoint:   "number.pool_heater_setpoint"
+
+  # settings — input_booleans (Home Modes / Automations / Climate / Panel)
+  ib_dinner:        "input_boolean.mode_dinner_party"
+  ib_guests:        "input_boolean.mode_overnight_guests"
+  ib_cleaners:      "input_boolean.mode_cleaners"
+  ib_away:          "input_boolean.mode_away"
+  ib_autoarm_away:  "input_boolean.auto_arm_away"
+  ib_autoarm_home:  "input_boolean.auto_arm_home"
+  ib_autodisarm:    "input_boolean.auto_disarm"
+  ib_vacuum:        "input_boolean.nightly_vacuum"
+  ib_thermo_living: "input_boolean.schedule_living_thermostat"
+  ib_thermo_bed:    "input_boolean.schedule_bedroom_thermostat"
+  ib_thermo_office: "input_boolean.schedule_office_thermostat"
+  ib_auto_bright:   "input_boolean.panel_auto_brightness"
+  ib_screensaver:   "input_boolean.panel_screensaver"
+  ib_touch_sounds:  "input_boolean.panel_touch_sounds"
+
+  # ---- TODO: verify icon codepoints (Material Design Icons) ----
+  # Format: "\U000FXXXX". Names in comments — check pictogrammers.com.
+  i_back:        "\U000F004D"   # mdi:arrow-left
+  i_bell:        "\U000F009A"   # mdi:bell
+  i_flash:       "\U000F0241"   # mdi:flash
+  i_water:       "\U000F058C"   # mdi:water
+  i_weather:     "\U000F0595"   # mdi:weather-partly-cloudy
+  i_chevron_r:   "\U000F0142"   # mdi:chevron-right
+  i_chevron_u:   "\U000F0143"   # mdi:chevron-up
+  i_chevron_d:   "\U000F0140"   # mdi:chevron-down
+  i_scenes:      "\U000F0068"   # mdi:auto-fix
+  i_music:       "\U000F075A"   # mdi:music
+  i_blinds:      "\U000F00AC"   # mdi:blinds
+  i_shield:      "\U000F0499"   # mdi:shield-outline (disarmed)
+  i_shield_ok:   "\U000F0565"   # mdi:shield-check   (armed)
+  i_pool:        "\U000F0606"   # mdi:pool
+  i_tune:        "\U000F062E"   # mdi:tune
+  i_power:       "\U000F0425"   # mdi:power
+  i_morning:     "\U000F059C"   # mdi:weather-sunset
+  i_movie:       "\U000F0381"   # mdi:movie
+  i_luggage:     "\U000F0BD6"   # mdi:bag-suitcase
+  i_night:       "\U000F0594"   # mdi:weather-night
+  i_dinner:      "\U000F0A70"   # mdi:silverware-fork-knife
+  i_focus:       "\U000F117B"   # mdi:meditation
+  i_album:       "\U000F0025"   # mdi:album
+  i_eq:          "\U000F005D"   # mdi:equalizer (verify)
+  i_shuffle:     "\U000F049D"   # mdi:shuffle
+  i_prev:        "\U000F04AE"   # mdi:skip-previous
+  i_next:        "\U000F04AD"   # mdi:skip-next
+  i_play:        "\U000F040A"   # mdi:play
+  i_pause:       "\U000F03E4"   # mdi:pause
+  i_repeat:      "\U000F0456"   # mdi:repeat
+  i_vol:         "\U000F0580"   # mdi:volume-medium
+  i_check:       "\U000F05E0"   # mdi:check-circle
+  i_alert:       "\U000F0028"   # mdi:alert-circle
+  i_walk:        "\U000F0583"   # mdi:walk
+  i_home:        "\U000F02DC"   # mdi:home
+  i_lock_open:   "\U000F033F"   # mdi:lock-open-variant (verify)
+  i_close:       "\U000F0156"   # mdi:close
+  i_backspace:   "\U000F006E"   # mdi:backspace (verify)
+  i_plus:        "\U000F0415"   # mdi:plus
+  i_minus:       "\U000F0374"   # mdi:minus
+  i_heat:        "\U000F0438"   # mdi:radiator
+  i_waves:       "\U000F078D"   # mdi:waves (verify)
+  i_door:        "\U000F081A"   # mdi:door
+  i_lock:        "\U000F033E"   # mdi:lock
+  i_party:       "\U000F1056"   # mdi:party-popper
+  i_bed:         "\U000F02C7"   # mdi:bed-king (verify)
+  i_broom:       "\U000F0359"   # mdi:broom (verify)
+  i_fan:         "\U000F0210"   # mdi:fan
+  i_thermostat:  "\U000F0393"   # mdi:thermostat
+  i_brightness:  "\U000F00C5"   # mdi:brightness-auto (verify)
+  i_monitor:     "\U000F0379"   # mdi:monitor
+  i_volume_up:   "\U000F057E"   # mdi:volume-high
+  i_pause_circ:  "\U000F03E5"   # mdi:pause-circle (verify)
+
+# -------------------------------------------------------------------
+#  CORE
+# -------------------------------------------------------------------
+
+logger:
+  level: INFO
+
+
+time:
+  - platform: homeassistant
+    id: ha_time
+    on_time:
+      - seconds: '*'
+        then:
+          - lvgl.label.update:
+              id: lbl_clock
+              text: !lambda |-
+                auto t = id(ha_time).now();
+                if (!t.is_valid()) return std::string("--:--");
+                int h = t.hour % 12; if (h == 0) h = 12;
+                char b[8]; snprintf(b, sizeof(b), "%d:%02d", h, t.minute);
+                return std::string(b);
+          - lvgl.label.update:
+              id: lbl_ampm
+              text: !lambda 'return id(ha_time).now().hour >= 12 ? "PM" : "AM";'
+
+# -------------------------------------------------------------------
+#  DISPLAY + TOUCH   >>> TODO: replace with YOUR board's known-good config
+#  The block below is the common Guition ESP32-4848S040 (ST7701S + GT911).
+#  If you have a different panel, paste its display/touchscreen config here.
+# -------------------------------------------------------------------
+
+font:
+  # Special glyphs reused across text sizes (degree, middot, dashes, quote)
+  - file: "gfonts://Manrope@600"
+    id: manrope_13
+    size: 13
+    bpp: 4
+    extras: &m_extras
+      - file: "gfonts://Manrope@600"
+        glyphs: ["°", "·", "–", "—", "’", "%", "&"]
+  - file: "gfonts://Manrope@600"
+    id: manrope_14
+    size: 14
+    bpp: 4
+  - file: "gfonts://Manrope@700"
+    id: manrope_15
+    size: 15
+    bpp: 4
+  - file: "gfonts://Manrope@700"
+    id: manrope_16            # default_font for the LVGL pages
+    size: 16
+    bpp: 4
+  - file: "gfonts://Manrope@700"
+    id: manrope_17
+    size: 17
+    bpp: 4
+  - file: "gfonts://Manrope@700"
+    id: manrope_18
+    size: 18
+    bpp: 4
+  - file: "gfonts://Manrope@700"
+    id: manrope_20
+    size: 20
+    bpp: 4
+  - file: "gfonts://Manrope@700"
+    id: manrope_27
+    size: 27
+    bpp: 4
+  - file: "gfonts://Manrope@800"
+    id: manrope_24
+    size: 24
+    bpp: 4
+  - file: "gfonts://Manrope@800"
+    id: manrope_26
+    size: 26
+    bpp: 4
+  - file: "gfonts://Manrope@800"
+    id: manrope_28
+    size: 28
+    bpp: 4
+  - file: "gfonts://Manrope@800"
+    id: manrope_42
+    size: 42
+    bpp: 4
+  - file: "gfonts://Manrope@800"
+    id: manrope_56
+    size: 56
+    bpp: 4
+
+  # ---- Material Design Icons (one TTF, several sizes) ----
+  # Each size lists all glyphs the UI uses. Add/verify codepoints above.
+  - &mdi_glyphs
+    file:
+      type: web
+      url: "https://github.com/Templarian/MaterialDesign-Webfont/raw/master/fonts/materialdesignicons-webfont.ttf"
+    id: icons_22
+    size: 22
+    bpp: 4
+    glyphs: [
+      "${i_back}","${i_bell}","${i_flash}","${i_water}","${i_weather}",
+      "${i_chevron_r}","${i_chevron_u}","${i_chevron_d}","${i_scenes}","${i_music}",
+      "${i_blinds}","${i_shield}","${i_shield_ok}","${i_pool}","${i_tune}",
+      "${i_power}","${i_morning}","${i_movie}","${i_luggage}","${i_night}",
+      "${i_dinner}","${i_focus}","${i_album}","${i_eq}","${i_shuffle}",
+      "${i_prev}","${i_next}","${i_play}","${i_pause}","${i_repeat}",
+      "${i_vol}","${i_check}","${i_alert}","${i_walk}","${i_home}",
+      "${i_lock_open}","${i_close}","${i_backspace}","${i_plus}","${i_minus}",
+      "${i_heat}","${i_waves}","${i_door}","${i_lock}","${i_party}",
+      "${i_bed}","${i_broom}","${i_fan}","${i_thermostat}","${i_brightness}",
+      "${i_monitor}","${i_volume_up}","${i_pause_circ}" ]
+  - <<: *mdi_glyphs
+    id: icons_24
+    size: 24
+  - <<: *mdi_glyphs
+    id: icons_28
+    size: 28
+  - <<: *mdi_glyphs
+    id: icons_30
+    size: 30
+  - <<: *mdi_glyphs
+    id: icons_34
+    size: 34
+  - <<: *mdi_glyphs
+    id: icons_56
+    size: 56
+
+# -------------------------------------------------------------------
+#  STATE
+# -------------------------------------------------------------------
+
+globals:
+  - id: code_buffer
+    type: std::string
+    restore_value: no
+    initial_value: '""'
+
+# -------------------------------------------------------------------
+#  SCRIPTS (shared HA calls — keeps the UI section terse)
+# -------------------------------------------------------------------
+
+script:
+  - id: ha_scene
+    parameters: { eid: string }
+    then:
+      - homeassistant.action:
+          action: scene.turn_on
+          data: { entity_id: !lambda 'return eid;' }
+  - id: ha_toggle
+    parameters: { eid: string }
+    then:
+      - homeassistant.action:
+          action: homeassistant.toggle
+          data: { entity_id: !lambda 'return eid;' }
+  - id: code_append
+    parameters: { d: string }
+    then:
+      - lambda: |-
+          id(code_buffer) += d;
+          if (id(code_buffer).length() >= 4) {
+            if (id(code_buffer) == "${alarm_user_code}") {
+              // correct code -> toggle armed/disarmed via HA
+              std::string st = id(txt_alarm_state).state;
+              if (st == "disarmed" || st.empty()) {
+                id(call_arm_away).execute();
+              } else {
+                id(call_disarm).execute();
+              }
+              id(code_buffer) = "";
+              id(set_code_dots).execute();
+            } else {
+              id(code_buffer) = "";
+              id(flash_code_error).execute();
+            }
+          } else {
+            id(set_code_dots).execute();
+          }
+  - id: code_clear
+    then:
+      - lambda: 'id(code_buffer) = "";'
+      - script.execute: set_code_dots
+  - id: code_backspace
+    then:
+      - lambda: 'if(!id(code_buffer).empty()) id(code_buffer).pop_back();'
+      - script.execute: set_code_dots
+  - id: set_code_dots
+    then:
+      - lambda: |-
+          int n = id(code_buffer).length();
+          lv_obj_t * dots[4] = { id(dot0), id(dot1), id(dot2), id(dot3) };
+          for (int i = 0; i < 4; i++) {
+            bool on = i < n;
+            lv_obj_set_style_bg_opa(dots[i], on ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+          }
+  - id: flash_code_error
+    then:
+      - lambda: |-
+          lv_obj_t * dots[4] = { id(dot0), id(dot1), id(dot2), id(dot3) };
+          for (int i = 0; i < 4; i++) {
+            lv_obj_set_style_bg_color(dots[i], lv_color_hex(${color_alert}), 0);
+            lv_obj_set_style_bg_opa(dots[i], LV_OPA_COVER, 0);
+          }
+      - delay: 650ms
+      - lambda: |-
+          lv_obj_t * dots[4] = { id(dot0), id(dot1), id(dot2), id(dot3) };
+          for (int i = 0; i < 4; i++) {
+            lv_obj_set_style_bg_color(dots[i], lv_color_hex(${color_accent}), 0);
+            lv_obj_set_style_bg_opa(dots[i], LV_OPA_TRANSP, 0);
+          }
+  - id: call_arm_away
+    then:
+      - homeassistant.action:
+          action: alarm_control_panel.alarm_arm_away
+          data: { entity_id: "${entity_alarm}" }
+  - id: call_disarm
+    then:
+      - homeassistant.action:
+          action: alarm_control_panel.alarm_disarm
+          data: { entity_id: "${entity_alarm}", code: "${alarm_user_code}" }
+
+# ===================================================================
+#  HOME ASSISTANT  <->  WIDGET BINDINGS
+# ===================================================================
+
+text_sensor:
+  - platform: homeassistant
+    id: txt_alarm_state
+    entity_id: ${entity_alarm}
+    on_value:
+      - lvgl.label.update:
+          id: lbl_alarm_sub
+          text: !lambda |-
+            if (x == "armed_away") return std::string("Armed · Away");
+            if (x == "armed_home") return std::string("Armed · Home");
+            if (x == "armed_night") return std::string("Armed · Night");
+            return std::string("Disarmed");
+      - lvgl.label.update:
+          id: lbl_sec_title
+          text: !lambda |-
+            if (x == "disarmed" || x.empty()) return std::string("Ready to arm");
+            if (x == "armed_away") return std::string("Armed · Away");
+            if (x == "armed_home") return std::string("Armed · Home");
+            if (x == "armed_night") return std::string("Armed · Night");
+            return std::string("Armed");
+
+  - platform: homeassistant
+    id: txt_scene
+    entity_id: ${entity_scene_select}
+    on_value:
+      - lvgl.label.update: { id: lbl_scene_sub, text: !lambda 'return x.empty() ? std::string("None active") : x + " active";' }
+
+  - platform: homeassistant
+    id: txt_track
+    entity_id: ${entity_media_player}
+    attribute: media_title
+    on_value:
+      - lvgl.label.update: { id: lbl_track, text: !lambda 'return x.empty() ? std::string("Nothing playing") : x;' }
+      - lvgl.label.update: { id: lbl_music_sub, text: !lambda 'return x.empty() ? std::string("Paused") : x;' }
+  - platform: homeassistant
+    id: txt_artist
+    entity_id: ${entity_media_player}
+    attribute: media_artist
+    on_value:
+      - lvgl.label.update: { id: lbl_artist, text: !lambda 'return x;' }
+
+  - platform: homeassistant
+    id: txt_filter
+    entity_id: ${select_pool_filter}
+    # NOTE: highlight handled in README pattern; sub-label below
+    on_value:
+      - lvgl.label.update:
+          id: lbl_pool_sub
+          text: !lambda 'return std::string("Filter ") + x;'
+
+
+sensor:
+  - platform: homeassistant
+    id: num_outdoor_temp
+    entity_id: ${entity_outdoor_temp}
+    on_value:
+      - lvgl.label.update: { id: lbl_temp, text: !lambda 'char b[8]; snprintf(b,sizeof(b),"%d°",(int)x); return std::string(b);' }
+
+  - platform: homeassistant
+    id: num_pool_water
+    entity_id: ${entity_pool_water}
+    on_value:
+      - lvgl.label.update: { id: lbl_pool_water, text: !lambda 'char b[8]; snprintf(b,sizeof(b),"%d°",(int)x); return std::string(b);' }
+
+  - platform: homeassistant
+    id: num_pool_setpoint
+    entity_id: ${number_pool_setpoint}
+    on_value:
+      - lvgl.label.update: { id: lbl_setpoint, text: !lambda 'char b[8]; snprintf(b,sizeof(b),"%d°",(int)x); return std::string(b);' }
+
+  - platform: homeassistant
+    id: num_alerts
+    entity_id: ${entity_alert_count}
+    on_value:
+      - lvgl.label.update: { id: lbl_badge, text: !lambda 'char b[4]; snprintf(b,sizeof(b),"%d",(int)x); return std::string(b);' }
+      - lvgl.widget.update:
+          id: badge_bell
+          hidden: !lambda 'return x < 1;'
+
+  # Shade positions -> sliders + labels
+  - platform: homeassistant
+    id: num_shade_living
+    entity_id: ${cover_living}
+    attribute: current_position
+    on_value:
+      - lvgl.slider.update: { id: sld_shade_living, value: !lambda 'return x;' }
+      - lvgl.label.update: { id: lbl_shade_living, text: !lambda 'return x==0?std::string("Closed"):x==100?std::string("Open"):to_string((int)x)+"% open";' }
+  - platform: homeassistant
+    id: num_shade_bedroom
+    entity_id: ${cover_bedroom}
+    attribute: current_position
+    on_value:
+      - lvgl.slider.update: { id: sld_shade_bedroom, value: !lambda 'return x;' }
+      - lvgl.label.update: { id: lbl_shade_bedroom, text: !lambda 'return x==0?std::string("Closed"):x==100?std::string("Open"):to_string((int)x)+"% open";' }
+  - platform: homeassistant
+    id: num_shade_kitchen
+    entity_id: ${cover_kitchen}
+    attribute: current_position
+    on_value:
+      - lvgl.slider.update: { id: sld_shade_kitchen, value: !lambda 'return x;' }
+      - lvgl.label.update: { id: lbl_shade_kitchen, text: !lambda 'return x==0?std::string("Closed"):x==100?std::string("Open"):to_string((int)x)+"% open";' }
+
+  - platform: homeassistant
+    id: num_volume
+    entity_id: ${entity_media_player}
+    attribute: volume_level
+    on_value:
+      - lvgl.slider.update: { id: sld_volume, value: !lambda 'return (int)(x*100);' }
+
+
+binary_sensor:
+  # Contextual banners on Home
+  - platform: homeassistant
+    id: bs_power_outage
+    entity_id: ${entity_power_outage}
+    on_state:
+      - lvgl.widget.update: { id: banner_power, hidden: !lambda 'return !x;' }
+  - platform: homeassistant
+    id: bs_sprinkler
+    entity_id: ${entity_sprinkler_run}
+    on_state:
+      - lvgl.widget.update: { id: banner_sprinkler, hidden: !lambda 'return !x;' }
+      - lvgl.widget.update: { id: card_sprinkler_run, hidden: !lambda 'return !x;' }
+      - lvgl.widget.update: { id: card_sprinkler_idle, hidden: !lambda 'return x;' }
+
+  # Pool heater state -> switch widget (see README re: feedback loops)
+  - platform: homeassistant
+    id: bs_pool_heater
+    entity_id: ${switch_pool_heater}
+    on_state:
+      - lvgl.widget.update: { id: sw_heater, state: { checked: !lambda 'return x;' } }
+
+  # ---- Settings toggles: reflect input_boolean state on each row ----
+  - platform: homeassistant
+    id: bs_dinner
+    entity_id: ${ib_dinner}
+    on_state: { then: [ lvgl.widget.update: { id: row_dinner, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_guests
+    entity_id: ${ib_guests}
+    on_state: { then: [ lvgl.widget.update: { id: row_guests, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_cleaners
+    entity_id: ${ib_cleaners}
+    on_state: { then: [ lvgl.widget.update: { id: row_cleaners, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_away
+    entity_id: ${ib_away}
+    on_state: { then: [ lvgl.widget.update: { id: row_away, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_autoarm_away
+    entity_id: ${ib_autoarm_away}
+    on_state: { then: [ lvgl.widget.update: { id: row_autoarm_away, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_autoarm_home
+    entity_id: ${ib_autoarm_home}
+    on_state: { then: [ lvgl.widget.update: { id: row_autoarm_home, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_autodisarm
+    entity_id: ${ib_autodisarm}
+    on_state: { then: [ lvgl.widget.update: { id: row_autodisarm, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_vacuum
+    entity_id: ${ib_vacuum}
+    on_state: { then: [ lvgl.widget.update: { id: row_vacuum, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_thermo_living
+    entity_id: ${ib_thermo_living}
+    on_state: { then: [ lvgl.widget.update: { id: row_thermo_living, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_thermo_bed
+    entity_id: ${ib_thermo_bed}
+    on_state: { then: [ lvgl.widget.update: { id: row_thermo_bed, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_thermo_office
+    entity_id: ${ib_thermo_office}
+    on_state: { then: [ lvgl.widget.update: { id: row_thermo_office, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_auto_bright
+    entity_id: ${ib_auto_bright}
+    on_state: { then: [ lvgl.widget.update: { id: row_auto_bright, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_screensaver
+    entity_id: ${ib_screensaver}
+    on_state: { then: [ lvgl.widget.update: { id: row_screensaver, state: { checked: !lambda 'return x;' } } ] }
+  - platform: homeassistant
+    id: bs_touch_sounds
+    entity_id: ${ib_touch_sounds}
+    on_state: { then: [ lvgl.widget.update: { id: row_touch_sounds, state: { checked: !lambda 'return x;' } } ] }
+
+# ===================================================================
+#  LVGL  —  9 PAGES   (see lvgl_pages.yaml)
+# ===================================================================
+
+# ===================================================================
+#  LVGL  —  9 PAGES   (UI lives in the repo-root lvgl_pages.yaml)
+# ===================================================================
+lvgl: !include ../lvgl_pages.yaml
