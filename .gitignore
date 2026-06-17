@@ -4,6 +4,10 @@ secrets.yaml
 .esphome/
 *.bin
 build/
+.pioenvs/
+.piolibdeps/
+# ESPHome auto-generates a .gitignore in each config dir on every compile
+simulator/.gitignore
 
 # Python / venv
 .venv/
