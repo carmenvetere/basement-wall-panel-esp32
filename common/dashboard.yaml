@@ -34,63 +34,94 @@ substitutions:
   color_warning:        "0xCBA14E"   # amber — warnings
   color_white:          "0xFFFFFF"
 
-  # ---- TODO: Home Assistant entity IDs (placeholders) ----
-  entity_outdoor_temp:    "sensor.outdoor_temperature"
-  entity_weather:         "weather.home"
+  # ---- Home Assistant entity IDs ----
+  #  Mapped from the authoritative Lovelace prototype in the `mobile` HA
+  #  config repo (dashboards/nspanel/). Where the real setup diverges from
+  #  the original handoff's assumptions it is called out inline; the
+  #  matching handler/service was also updated to keep the control working.
+  entity_outdoor_temp:    "sensor.bayberry_tempest_temperature"
+  entity_weather:         "weather.bayberry"
 
-  # scenes
-  entity_scene_select:    "input_select.active_scene"   # text_sensor mirror of current scene
-  scene_morning:          "scene.morning"
+  # scenes (6 tiles, by slot). Real names: Morning, Movie, Evening,
+  # Goodnight, Dinner(=entertaining), Welcome. Tiles 3 & 6 were relabeled
+  # in lvgl_pages.yaml from "Away"/"Focus" -> "Evening"/"Welcome".
+  # NOTE: HA has no single "active scene" entity (the prototype computes it
+  #       from each scene's last_changed); the scene sub-label is therefore
+  #       not meaningful. Left pointing at a real scene so it resolves.
+  entity_scene_select:    "scene.good_morning_2"
+  scene_morning:          "scene.good_morning_2"
   scene_movie:            "scene.movie"
-  scene_away:             "scene.away"
-  scene_goodnight:        "scene.goodnight"
-  scene_dinner:           "scene.dinner"
-  scene_focus:            "scene.focus"
-  scene_all_off:          "script.all_off"
+  scene_away:             "scene.evening"          # tile relabeled "Evening"
+  scene_goodnight:        "scene.good_night"
+  scene_dinner:           "scene.entertaining"
+  scene_focus:            "scene.welcome"          # tile relabeled "Welcome"
+  scene_all_off:          "script.nspanel_all_off"
 
   # music
+  # NOTE: the real dashboard targets whichever Sonos room is chosen in
+  #       input_select.sonos_speaker_select; ESPHome uses one fixed player.
+  #       Default to the living room (change to your most-used speaker).
   entity_media_player:    "media_player.living_room"
 
-  # shades (covers)
-  cover_living:           "cover.living_room_shades"
-  cover_bedroom:          "cover.bedroom_shades"
-  cover_kitchen:          "cover.kitchen_shades"
+  # shades (3 ESPHome rows -> first 3 real cover groups; rows relabeled)
+  cover_living:           "cover.first_floor_all"        # row relabeled "First Floor"
+  cover_bedroom:          "cover.bedroom_side_shades"    # row relabeled "Bedroom Side"
+  cover_kitchen:          "cover.bedroom_back"           # row relabeled "Bedroom Back"
 
   # alarm
-  entity_alarm:           "alarm_control_panel.home"
-  alarm_user_code:        "1234"                          # local pre-check before calling HA
+  entity_alarm:           "alarm_control_panel.alarmo"
+  alarm_user_code:        "1234"                  # TODO: set your real arm/disarm code
 
-  # sprinklers
-  entity_sprinkler_run:   "binary_sensor.irrigation_active"
-  entity_sprinkler_zone:  "sensor.irrigation_current_zone"
-  entity_sprinkler_time:  "sensor.irrigation_time_remaining"
-  switch_sprinkler:       "switch.irrigation"
+  # sprinklers (Rachio — 7 zone switches, no aggregate sensor)
+  # NOTE: the handoff's single-zone model doesn't fit a multi-zone Rachio.
+  #       entity_sprinkler_run / switch_sprinkler use one representative
+  #       zone so the banner + start/stop work; zone/time sub-sensors have
+  #       no real equivalent (left blank-ish). See README for a template
+  #       binary_sensor that aggregates "any zone on" if you want it.
+  entity_sprinkler_run:   "switch.pool_180s"
+  entity_sprinkler_zone:  "switch.pool_180s"
+  entity_sprinkler_time:  "switch.pool_180s"
+  switch_sprinkler:       "switch.pool_180s"
 
   # alerts / power
-  entity_alert_count:     "sensor.active_alerts"          # numeric count -> badge
-  entity_power_outage:    "binary_sensor.grid_power_lost"
+  entity_alert_count:     "sensor.notification_alert_counter"
+  # NOTE: bayberry_grid_status is INVERTED vs the handoff (on = grid OK,
+  #       off = outage). The bs_power_outage handler was inverted to match.
+  entity_power_outage:    "binary_sensor.bayberry_grid_status"
 
   # pool
-  entity_pool_water:      "sensor.pool_water_temperature"
-  select_pool_filter:     "select.pool_pump_speed"        # options: Off/Low/Medium/High
-  switch_pool_heater:     "switch.pool_heater"
-  number_pool_setpoint:   "number.pool_heater_setpoint"
+  entity_pool_water:      "sensor.omnilogic_pool_watersensor"
+  # Filter speed: not a select. "Off" turns the pump switch off; Low/Med/High
+  # press dedicated buttons; the numeric speed is read for the sub-label.
+  select_pool_filter:     "number.omnilogic_pool_filter_pump_speed"  # display only
+  switch_pool_filter_pump: "switch.omnilogic_pool_filter_pump"       # Off
+  button_pool_low:        "button.omnilogic_pool_filter_pump_low_speed"
+  button_pool_med:        "button.omnilogic_pool_filter_pump_medium_speed"
+  button_pool_high:       "button.omnilogic_pool_filter_pump_high_speed"
+  # Heater is a water_heater (not a switch): toggled via water_heater.turn_on/off,
+  # state read as "off" vs anything-else. Handlers updated accordingly.
+  switch_pool_heater:     "water_heater.omnilogic_pool_heater"
+  number_pool_setpoint:   "input_number.pool_heater_setpoint"        # input_number, not number
 
-  # settings — input_booleans (Home Modes / Automations / Climate / Panel)
-  ib_dinner:        "input_boolean.mode_dinner_party"
-  ib_guests:        "input_boolean.mode_overnight_guests"
-  ib_cleaners:      "input_boolean.mode_cleaners"
-  ib_away:          "input_boolean.mode_away"
-  ib_autoarm_away:  "input_boolean.auto_arm_away"
-  ib_autoarm_home:  "input_boolean.auto_arm_home"
-  ib_autodisarm:    "input_boolean.auto_disarm"
-  ib_vacuum:        "input_boolean.nightly_vacuum"
-  ib_thermo_living: "input_boolean.schedule_living_thermostat"
-  ib_thermo_bed:    "input_boolean.schedule_bedroom_thermostat"
-  ib_thermo_office: "input_boolean.schedule_office_thermostat"
-  ib_auto_bright:   "input_boolean.panel_auto_brightness"
-  ib_screensaver:   "input_boolean.panel_screensaver"
-  ib_touch_sounds:  "input_boolean.panel_touch_sounds"
+  # settings rows. Real Home Modes are input_booleans; everything else is an
+  # automation toggled on/off. The handoff's "Panel" section (no real
+  # equivalent) was repurposed to the 3 Shade-Schedule automations and the
+  # rows relabeled. (Real also has a Basement thermostat automation that the
+  # 3-row Climate section can't show — see README.)
+  ib_dinner:        "input_boolean.dinner_party"
+  ib_guests:        "input_boolean.guest_mode"
+  ib_cleaners:      "input_boolean.cleaners_mode"
+  ib_away:          "input_boolean.away_mode"
+  ib_autoarm_away:  "automation.alarm_arm_away_when_everyone_leaves"
+  ib_autoarm_home:  "automation.alarm_arm_home_mode_if_someone_is_home_on_good_night_or_11pm"
+  ib_autodisarm:    "automation.alarm_disarm_upon_arriving_home"
+  ib_vacuum:        "automation.12_00am_roborock_s8_vacuum_basement"
+  ib_thermo_living: "automation.living_room_hvac_schedule_v3"
+  ib_thermo_bed:    "automation.bedroom_hvac_schedule"
+  ib_thermo_office: "automation.office_thermostat_schedule_v2"
+  ib_auto_bright:   "automation.living_room_adaptive_shading"            # row relabeled "Living Room Adaptive"
+  ib_screensaver:   "automation.dining_room_adaptive_shading"           # row relabeled "Dining Room Adaptive"
+  ib_touch_sounds:  "automation.primary_bedroom_shades_schedule_adaptive"  # row relabeled "Primary Bedroom Adaptive"
 
   # ---- TODO: verify icon codepoints (Material Design Icons) ----
   # Format: "\U000FXXXX". Names in comments — check pictogrammers.com.
@@ -416,11 +447,20 @@ text_sensor:
   - platform: homeassistant
     id: txt_filter
     entity_id: ${select_pool_filter}
-    # NOTE: highlight handled in README pattern; sub-label below
+    # ${select_pool_filter} is the numeric pump-speed entity; show it as the sub-label.
     on_value:
       - lvgl.label.update:
           id: lbl_pool_sub
-          text: !lambda 'return std::string("Filter ") + x;'
+          text: !lambda 'return x.empty() ? std::string("Filter off") : std::string("Filter ") + x + "%";'
+
+  # Pool heater is a water_heater: "off" => off, any other mode => on.
+  - platform: homeassistant
+    id: txt_pool_heater
+    entity_id: ${switch_pool_heater}
+    on_value:
+      - lvgl.widget.update:
+          id: sw_heater
+          state: { checked: !lambda 'return !(x == "off" || x.empty());' }
 
 
 sensor:
@@ -488,7 +528,9 @@ binary_sensor:
     id: bs_power_outage
     entity_id: ${entity_power_outage}
     on_state:
-      - lvgl.widget.update: { id: banner_power, hidden: !lambda 'return !x;' }
+      # INVERTED: bayberry_grid_status is ON when the grid is healthy, so the
+      # outage banner shows when the sensor is OFF (x == false).
+      - lvgl.widget.update: { id: banner_power, hidden: !lambda 'return x;' }
   - platform: homeassistant
     id: bs_sprinkler
     entity_id: ${entity_sprinkler_run}
@@ -496,13 +538,6 @@ binary_sensor:
       - lvgl.widget.update: { id: banner_sprinkler, hidden: !lambda 'return !x;' }
       - lvgl.widget.update: { id: card_sprinkler_run, hidden: !lambda 'return !x;' }
       - lvgl.widget.update: { id: card_sprinkler_idle, hidden: !lambda 'return x;' }
-
-  # Pool heater state -> switch widget (see README re: feedback loops)
-  - platform: homeassistant
-    id: bs_pool_heater
-    entity_id: ${switch_pool_heater}
-    on_state:
-      - lvgl.widget.update: { id: sw_heater, state: { checked: !lambda 'return x;' } }
 
   # ---- Settings toggles: reflect input_boolean state on each row ----
   - platform: homeassistant

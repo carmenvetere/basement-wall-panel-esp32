@@ -411,7 +411,7 @@ pages:
                       on_click: { script.execute: { id: ha_scene, eid: "${scene_away}" } }
                       widgets:
                         - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_luggage}", text_font: icons_24, text_color: $color_icon } } ] }
-                        - label: { text: "Away", text_font: manrope_18, text_color: $color_text }
+                        - label: { text: "Evening", text_font: manrope_18, text_color: $color_text }
                   - button:
                       flex_grow: 1
                       height: 108
@@ -447,7 +447,7 @@ pages:
                       on_click: { script.execute: { id: ha_scene, eid: "${scene_focus}" } }
                       widgets:
                         - obj: { width: 44, height: 44, radius: 13, bg_color: $color_border, bg_opa: 6%, border_width: 0, pad_all: 0, widgets: [ { label: { align: CENTER, text: "${i_focus}", text_font: icons_24, text_color: $color_icon } } ] }
-                        - label: { text: "Focus", text_font: manrope_18, text_color: $color_text }
+                        - label: { text: "Welcome", text_font: manrope_18, text_color: $color_text }
             # All Off — full width pill
             - button:
                 width: 100%
@@ -604,9 +604,9 @@ pages:
                 border_width: 1
                 border_color: $color_accent
                 border_opa: 50%
-                widgets: [ { label: { align: CENTER, text: "Living Room", text_font: manrope_14, text_color: $color_accent_light } } ]
-            - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Kitchen", text_font: manrope_14, text_color: $color_icon } } ] }
-            - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Bedroom", text_font: manrope_14, text_color: $color_icon } } ] }
+                widgets: [ { label: { align: CENTER, text: "First Floor", text_font: manrope_14, text_color: $color_accent_light } } ]
+            - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Bedroom Side", text_font: manrope_14, text_color: $color_icon } } ] }
+            - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Bedroom Back", text_font: manrope_14, text_color: $color_icon } } ] }
             - button: { width: SIZE_CONTENT, height: 44, radius: 22, pad_left: 16, pad_right: 16, bg_color: $color_surface, bg_opa: COVER, border_width: 1, border_color: $color_border, border_opa: 8%, widgets: [ { label: { align: CENTER, text: "Whole Home", text_font: manrope_14, text_color: $color_icon } } ] }
 
   # ---------------------------------------------------------------
@@ -694,7 +694,7 @@ pages:
                       height: SIZE_CONTENT
                       layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
                       widgets:
-                        - label: { text: "Living Room", text_font: manrope_18, text_color: $color_text }
+                        - label: { text: "First Floor", text_font: manrope_18, text_color: $color_text }
                         - label: { id: lbl_shade_living, text: "65% open", text_font: manrope_14, text_color: $color_text2 }
                   - obj:
                       styles: plain
@@ -727,7 +727,7 @@ pages:
                       height: SIZE_CONTENT
                       layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
                       widgets:
-                        - label: { text: "Bedroom", text_font: manrope_18, text_color: $color_text }
+                        - label: { text: "Bedroom Side", text_font: manrope_18, text_color: $color_text }
                         - label: { id: lbl_shade_bedroom, text: "Closed", text_font: manrope_14, text_color: $color_text2 }
                   - obj:
                       styles: plain
@@ -760,7 +760,7 @@ pages:
                       height: SIZE_CONTENT
                       layout: { type: flex, flex_flow: ROW, flex_align_main: SPACE_BETWEEN, flex_align_cross: CENTER }
                       widgets:
-                        - label: { text: "Kitchen", text_font: manrope_18, text_color: $color_text }
+                        - label: { text: "Bedroom Back", text_font: manrope_18, text_color: $color_text }
                         - label: { id: lbl_shade_kitchen, text: "Open", text_font: manrope_14, text_color: $color_text2 }
                   - obj:
                       styles: plain
@@ -1246,7 +1246,7 @@ pages:
                       border_width: 1
                       border_color: $color_border
                       border_opa: 8%
-                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "Off" } } }
+                      on_click: { homeassistant.action: { action: switch.turn_off, data: { entity_id: "${switch_pool_filter_pump}" } } }
                       widgets: [ { label: { align: CENTER, text: "Off", text_font: manrope_16, text_color: $color_icon } } ]
                   - button:
                       id: seg_low
@@ -1258,7 +1258,7 @@ pages:
                       border_width: 1
                       border_color: $color_border
                       border_opa: 8%
-                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "Low" } } }
+                      on_click: { homeassistant.action: { action: button.press, data: { entity_id: "${button_pool_low}" } } }
                       widgets: [ { label: { align: CENTER, text: "Low", text_font: manrope_16, text_color: $color_icon } } ]
                   - button:
                       id: seg_med
@@ -1270,7 +1270,7 @@ pages:
                       border_width: 1
                       border_color: $color_border
                       border_opa: 8%
-                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "Medium" } } }
+                      on_click: { homeassistant.action: { action: button.press, data: { entity_id: "${button_pool_med}" } } }
                       widgets: [ { label: { align: CENTER, text: "Med", text_font: manrope_16, text_color: $color_icon } } ]
                   - button:
                       id: seg_high
@@ -1282,7 +1282,7 @@ pages:
                       border_width: 1
                       border_color: $color_accent
                       border_opa: 55%
-                      on_click: { homeassistant.action: { action: select.select_option, data: { entity_id: "${select_pool_filter}", option: "High" } } }
+                      on_click: { homeassistant.action: { action: button.press, data: { entity_id: "${button_pool_high}" } } }
                       widgets: [ { label: { align: CENTER, text: "High", text_font: manrope_16, text_color: $color_accent_light } } ]
             # heater
             - label: { text: "HEATER", styles: section, margin_left: 2 }
@@ -1306,7 +1306,7 @@ pages:
                       knob: { bg_color: $color_white, bg_opa: COVER }
                       on_value:
                         - homeassistant.action:
-                            action: !lambda 'return std::string(x ? "switch.turn_on" : "switch.turn_off");'
+                            action: !lambda 'return std::string(x ? "water_heater.turn_on" : "water_heater.turn_off");'
                             data: { entity_id: "${switch_pool_heater}" }
             # setpoint stepper
             - obj:
@@ -1329,7 +1329,7 @@ pages:
                       border_opa: 8%
                       on_click:
                         - homeassistant.action:
-                            action: number.set_value
+                            action: input_number.set_value
                             data: { entity_id: "${number_pool_setpoint}", value: !lambda 'return std::max(60.0f, id(num_pool_setpoint).state - 1.0f);' }
                       widgets: [ { label: { align: CENTER, text: "${i_minus}", text_font: icons_28, text_color: $color_text } } ]
                   - obj:
@@ -1351,7 +1351,7 @@ pages:
                       border_opa: 8%
                       on_click:
                         - homeassistant.action:
-                            action: number.set_value
+                            action: input_number.set_value
                             data: { entity_id: "${number_pool_setpoint}", value: !lambda 'return std::min(104.0f, id(num_pool_setpoint).state + 1.0f);' }
                       widgets: [ { label: { align: CENTER, text: "${i_plus}", text_font: icons_28, text_color: $color_text } } ]
 
@@ -1639,7 +1639,7 @@ pages:
                 layout: { type: flex, flex_flow: ROW, flex_align_cross: CENTER, pad_column: 9 }
                 widgets:
                   - label: { text: "${i_tune}", text_font: icons_22, text_color: $color_icon }
-                  - label: { text: "Panel", text_font: manrope_15, text_color: $color_text }
+                  - label: { text: "Shade Schedules", text_font: manrope_15, text_color: $color_text }
                   - obj: { flex_grow: 1, height: 2, radius: 1, bg_color: $color_border, bg_opa: 10%, border_width: 0, pad_all: 0 }
             - button:
                 id: row_auto_bright
@@ -1656,7 +1656,7 @@ pages:
                 on_click: { script.execute: { id: ha_toggle, eid: "${ib_auto_bright}" } }
                 widgets:
                   - label: { text: "${i_brightness}", text_font: icons_22, text_color: $color_on_accent }
-                  - label: { text: "Auto Brightness", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Living Room Adaptive", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
                   - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
             - button:
                 id: row_screensaver
@@ -1673,7 +1673,7 @@ pages:
                 on_click: { script.execute: { id: ha_toggle, eid: "${ib_screensaver}" } }
                 widgets:
                   - label: { text: "${i_monitor}", text_font: icons_22, text_color: $color_on_accent }
-                  - label: { text: "Screen Saver", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Dining Room Adaptive", text_font: manrope_15, text_color: $color_white, flex_grow: 1, long_mode: DOT }
                   - label: { text: "On", text_font: manrope_14, text_color: 0xEAF2F8 }
             - button:
                 id: row_touch_sounds
@@ -1693,5 +1693,5 @@ pages:
                 on_click: { script.execute: { id: ha_toggle, eid: "${ib_touch_sounds}" } }
                 widgets:
                   - label: { text: "${i_volume_up}", text_font: icons_22, text_color: $color_icon }
-                  - label: { text: "Touch Sounds", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
+                  - label: { text: "Primary Bedroom Adaptive", text_font: manrope_15, text_color: 0xC4C0B6, flex_grow: 1, long_mode: DOT }
                   - label: { text: "Off", text_font: manrope_14, text_color: $color_dim }
