@@ -34,6 +34,11 @@ api:
 display:
   - platform: sdl
     id: main_display
+    # The SDL window only repaints on this interval. The display default is
+    # 1000ms, which makes the simulator look frozen / unresponsive to clicks
+    # (LVGL processes input immediately, but you don't SEE it until the next
+    # repaint). ~60fps makes it feel live.
+    update_interval: 16ms
     dimensions:
       width: 480
       height: 480
@@ -42,13 +47,3 @@ touchscreen:
   - platform: sdl
     id: main_touch
     display: main_display
-    # TEMP DIAGNOSTIC: logs every touch so we can confirm mouse input is
-    # reaching ESPHome. If you click the window and see "TOUCH x=.. y=.."
-    # in the terminal, input works (and the issue is elsewhere); if you see
-    # nothing, SDL isn't delivering mouse events (window focus / macOS).
-    # Remove this on_touch block once clicks work.
-    on_touch:
-      - logger.log:
-          level: WARN
-          format: "TOUCH x=%d y=%d"
-          args: ["touch.x", "touch.y"]
