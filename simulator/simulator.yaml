@@ -47,23 +47,3 @@ touchscreen:
   - platform: sdl
     id: main_touch
     display: main_display
-    # TEMP DIAGNOSTIC #2: on every release, log it AND force a page change.
-    # This bypasses widget hit-testing. If clicking anywhere in the window
-    # cycles through the 9 pages, LVGL IS acting on touch (problem is
-    # elsewhere). If pages never change, LVGL isn't processing input/render.
-    on_release:
-      - logger.log:
-          level: WARN
-          format: "RELEASE -> lvgl.page.next"
-      - lvgl.page.next:
-
-# TEMP DIAGNOSTIC #1: drive the clock label locally (no Home Assistant
-# needed) so we can tell if LVGL is rendering at all. If the number on the
-# Home screen counts up every second, rendering works; if it's frozen,
-# LVGL/the SDL display isn't updating.
-interval:
-  - interval: 1s
-    then:
-      - lvgl.label.update:
-          id: lbl_clock
-          text: !lambda 'static int n = 0; return std::to_string(n++);'
