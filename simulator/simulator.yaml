@@ -42,3 +42,13 @@ touchscreen:
   - platform: sdl
     id: main_touch
     display: main_display
+    # TEMP DIAGNOSTIC: logs every touch so we can confirm mouse input is
+    # reaching ESPHome. If you click the window and see "TOUCH x=.. y=.."
+    # in the terminal, input works (and the issue is elsewhere); if you see
+    # nothing, SDL isn't delivering mouse events (window focus / macOS).
+    # Remove this on_touch block once clicks work.
+    on_touch:
+      - logger.log:
+          level: WARN
+          format: "TOUCH x=%d y=%d"
+          args: ["touch.x", "touch.y"]
